@@ -48,13 +48,13 @@ once v1.0 is shipped. Pick whichever interests you next.
 
 ### Tier 2 — when there's user demand
 
-4. **ESLint 8 → 9 migration.** ESLint 8 reached end-of-life
-   late 2025; `npm ci` prints deprecation warnings for it and
-   five transitive deps. The migration touches `.eslintrc.cjs`
-   (now a flat `eslint.config.js`), `@typescript-eslint`'s v9
-   API, and the Jest plugin's flat-config story. Not security-
-   sensitive (`npm audit` is clean), but worth doing before any
-   plugin we depend on drops eslint-8 support.
+4. **Jest 29 → 30 migration.** Jest 29's internals still pull
+   `inflight@1.0.6` and `glob@7.2.3`, which `npm ci` flags as
+   deprecated. Jest 30 (2025) cleans those up but bumps the
+   minimum Node version and has a few API changes (mainly around
+   timer mocks). Not security-sensitive (`npm audit` clean), but
+   the easy wins from ESLint 9 have already been taken; Jest is
+   the last source of `npm ci` deprecation noise.
 
 5. **Per-product tax category mapping.** v1.0 sends every line as
    category `general`. Map Saleor's tax classes to the OST

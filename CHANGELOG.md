@@ -6,6 +6,21 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Changed
+- Bump GitHub Actions to Node-24-compatible majors:
+  `actions/checkout@v4 → @v6`, `actions/setup-node@v4 → @v6`,
+  `actions/upload-artifact@v4 → @v7`. Removes the deprecation
+  banner on every CI/release run.
+- Migrate ESLint 8 → 9. Replaces `.eslintrc.cjs` with flat-config
+  `eslint.config.js`; swaps separate `@typescript-eslint/*`
+  packages for the unified `typescript-eslint` meta-package.
+  `npm ci` deprecation-warning count drops from 6 to 2 (the
+  remaining two come from Jest 29 internals; queued for v1.1).
+
+### Added
+- `prepublishOnly` npm script — runs `npm run build` before any
+  `npm publish`. Closes the empty-`dist/` footgun.
+
 ## [1.0.1] - 2026-05-13
 
 Housekeeping cut — same runtime code as v1.0.0, plus the
