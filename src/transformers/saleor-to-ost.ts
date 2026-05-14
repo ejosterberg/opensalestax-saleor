@@ -66,15 +66,14 @@ export function buildOstRequest(taxBase: SaleorTaxBase): SaleorToOstResult {
     };
   }
 
-  const match = US_ZIP_RE.exec(taxBase.address.postalCode);
-  if (!match || match[1] === undefined) {
+  const zip5 = US_ZIP_RE.exec(taxBase.address.postalCode)?.[1];
+  if (zip5 === undefined) {
     return {
       ok: false,
       reason: 'invalid-zip',
       detail: `postalCode=${taxBase.address.postalCode}`,
     };
   }
-  const zip5 = match[1];
 
   if (!Array.isArray(taxBase.lines) || taxBase.lines.length === 0) {
     return { ok: false, reason: 'no-lines', detail: 'lines[] empty' };
