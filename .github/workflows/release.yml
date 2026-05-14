@@ -1,0 +1,54 @@
+name: release
+
+# Publishes the package to NPM. Two triggers:
+#   * workflow_dispatch — manual button on the Actions page. Use this
+#     for the initial v1.0.0 release (the tag already exists) or any
+#     time you want to republish from main HEAD without cutting a new
+#     tag.
+#   * push: tags: ['v*'] — automatic publish when a vX.Y.Z tag lands
+#     on origin. This is the long-term flow: `git tag v1.0.1 && git
+#     push origin v1.0.1` triggers publish.
+#
+# The workflow re-runs the full quality gate (`npm run check`) before
+# publishing so a stale `main` can't ship if it slipped post-tag.
+#
+# Token: NPM_TOKEN repo secret. Generate at https://www.npmjs.com/settings/<your-account>/tokens
+# (granular token recommended; scope: publish; package: @ejosterberg/saleor-app-opensalestax).
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write   # enables NPM provenance attestation (--provenance)
+
+jobs:
+  publish:
+    name: publish to NPM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Quality gate (lint + typecheck + tests + audit)
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
