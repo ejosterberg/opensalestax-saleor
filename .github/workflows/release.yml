@@ -62,39 +62,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      # TEMP diagnostic — print the OIDC claims that GitHub Actions
-      # will send to NPM for Trusted Publishing. Compare against the
-      # trusted publisher config on npmjs.com. Remove this step once
-      # publishing works.
-      - name: Debug — print OIDC claims
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const token = await core.getIDToken('npm');
-            const [, payload] = token.split('.');
-            const claims = JSON.parse(Buffer.from(payload, 'base64url').toString());
-            // strip noise but keep everything NPM uses for matching
-            const interesting = {
-              iss: claims.iss,
-              aud: claims.aud,
-              sub: claims.sub,
-              repository: claims.repository,
-              repository_owner: claims.repository_owner,
-              repository_owner_id: claims.repository_owner_id,
-              workflow: claims.workflow,
-              workflow_ref: claims.workflow_ref,
-              workflow_sha: claims.workflow_sha,
-              job_workflow_ref: claims.job_workflow_ref,
-              job_workflow_sha: claims.job_workflow_sha,
-              event_name: claims.event_name,
-              ref: claims.ref,
-              ref_type: claims.ref_type,
-              environment: claims.environment ?? '(empty)',
-              actor: claims.actor,
-              runner_environment: claims.runner_environment,
-            };
-            core.info('OIDC claims sent to NPM (audience=npm):');
-            core.info(JSON.stringify(interesting, null, 2));
-
       - name: Publish (trusted publishing + provenance)
         run: npm publish --access public --provenance
