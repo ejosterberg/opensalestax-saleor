@@ -14,8 +14,12 @@
 
 services:
   opensalestax:
-    image: ghcr.io/ejosterberg/opensalestax-saleor:latest
-    # Or, to build from this repo: `build: .`
+    # Build from source by default — every merchant gets the same
+    # bytes they audited in the repo. Comment this out and uncomment
+    # the `image:` line below to pull a pre-built tagged release
+    # from GitHub Container Registry instead.
+    build: .
+    # image: ghcr.io/ejosterberg/opensalestax-saleor:v0.1.0
     container_name: opensalestax
     restart: unless-stopped
     ports:
