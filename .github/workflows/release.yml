@@ -37,6 +37,13 @@ jobs:
     name: publish to NPM
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Binds this job to the `npm-publish` GitHub Environment.
+    # Trusted Publishing validates the OIDC token's `environment`
+    # claim against the value configured on the NPM trusted-publisher
+    # entry. Both must match (here: "npm-publish"; on npmjs.com:
+    # set "Environment name" to "npm-publish" on the package's
+    # Trusted Publisher).
+    environment: npm-publish
     steps:
       - uses: actions/checkout@v6
 
@@ -45,13 +52,6 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
           cache: npm
-
-      # Trusted publishing needs npm >= 11.5. Node 22.22+ ships
-      # npm 11.7+ in its toolcache image; no explicit upgrade
-      # needed (and `npm install -g npm@latest` from within itself
-      # is unreliable — it hit MODULE_NOT_FOUND in the v1.0.1 run).
-      - name: Check npm version
-        run: npm --version
 
       - name: Install dependencies
         run: npm ci
@@ -62,5 +62,24 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Publish (trusted publishing + provenance)
-        run: npm publish --access public --provenance
+      # Diagnostic block requested by NPM support — captures the
+      # registry config + ping + npm version that's actually
+      # running, so support can validate what we're presenting.
+      - name: Diagnostic — runtime env
+        run: |
+          echo "=== node + npm versions ==="
+          node --version
+          npm --version
+          echo "=== npm registry config ==="
+          npm config get registry
+          echo "=== npm full config ==="
+          npm config list -l 2>&1 | grep -v "_authToken\|password\|secret" || true
+          echo "=== npm ping ==="
+          npm ping --registry=https://registry.npmjs.org
+          echo "=== package.json head ==="
+          head -n 60 package.json
+          echo "=== current published version ==="
+          npm view @ejosterberg/saleor-app-opensalestax name version --registry=https://registry.npmjs.org || true
+
+      - name: Publish (trusted publishing + provenance, verbose)
+        run: npm publish --tag latest --access public --provenance --loglevel verbose
