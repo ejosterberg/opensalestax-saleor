@@ -6,6 +6,11 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-05-13
+
+Maintenance patch. No runtime behavior changes; pure dev-time
+hygiene + CI plumbing.
+
 ### Changed
 - Bump GitHub Actions to Node-24-compatible majors:
   `actions/checkout@v4 → @v6`, `actions/setup-node@v4 → @v6`,
@@ -119,7 +124,8 @@ chaining).
   in logs (negative-tested)
 - Container runs as the unprivileged `node` user
 
-[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ejosterberg/opensalestax-saleor/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/ejosterberg/opensalestax-saleor/releases/tag/v0.1.0
