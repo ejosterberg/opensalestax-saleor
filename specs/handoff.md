@@ -26,6 +26,13 @@ once v1.0 is shipped. Pick whichever interests you next.
 
 ### Tier 1 — likely shipped first
 
+0. **Publish v1.0.0 to NPM** (carried over from v1.0; see
+   `specs/decisions/001-npm-publish-deferred.md`). Run
+   `npm login` (or refresh the token in `~/.npmrc`), then
+   `npm publish --access public` from the repo root. Consider
+   adding a `release.yml` GitHub Actions workflow gated on tag
+   push so v1.0.1+ publishes automatically.
+
 1. **Full Saleor integration demo on the VM.** Stage 05 in the
    v1.0 kickoff stopped short of pulling the full saleor-platform
    docker stack. Pick that back up: pull
