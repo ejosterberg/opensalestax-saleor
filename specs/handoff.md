@@ -3,162 +3,97 @@
 > **Read first if you're a fresh agent.** Constitution + current
 > state + this file are the canonical bring-up sequence.
 
-## You are here — 2026-05-10 (project scaffold)
+## You are here — 2026-05-13 (post-v1.0)
 
-The Saleor Tax App is **pre-alpha** — specs are written; no
-TypeScript yet. Eric confirmed two architecture decisions on
-2026-05-10:
+v1.0.0 shipped. The connector is production-ready by the
+acceptance bar in `kickoff/success-criteria.md`:
 
-- **Decision B**: raw Node HTTP server + `@saleor/app-sdk`. No
-  Next.js, no React. Container target ~50 MB.
-- **Decision X**: merchant-self-hosted. Docker + docker-compose.
-  No SaaS tier in v0.x.
+- GitHub release v1.0.0 published
+- CI green on `main` HEAD
+- SonarQube clean (0 BLOCKER / 0 CRITICAL / A security / 0 hotspots)
+- 55 tests + 2 live integration tests; 95% line coverage
+- OWASP A01-A10 manual review committed
+- Live demo deployment at http://10.32.161.172:3000 (VMID 913)
+- README walks merchant from clone to live checkout in ≤10 min
 
-## What's next — implement v0.1.0 alpha
+For the deeper "where we are" snapshot read
+`specs/current-state.md`.
 
-The order below is the order to do it in. Each task fits a single
-focused work block (15–60 min).
+## What's next — v1.1 candidates
 
-### 1. Project bootstrap
+The order below is a recommendation; the order isn't load-bearing
+once v1.0 is shipped. Pick whichever interests you next.
 
-- [ ] `npm init -y` then edit `package.json`:
-  - `name`: `@ejosterberg/saleor-app-opensalestax`
-  - `version`: `0.1.0`
-  - `license`: `Apache-2.0`
-  - `engines.node`: `>=20`
-  - Dependencies (research-validated names):
-    - `@saleor/app-sdk` — latest 1.x (≥1.x, <2.x)
-    - `jose` — JWT verification (already a peer of app-sdk; pin
-      same major)
-  - DevDependencies: `typescript`, `tsx`, `jest`, `@types/jest`,
-    `@types/node`, `ts-jest`
-- [ ] `tsconfig.json` — target `ES2022`, module `Node16`, strict
-- [ ] `jest.config.js` — ts-jest preset, `testMatch:
-  ["**/tests/**/*.test.ts"]`
-- [ ] `.gitignore`, `.editorconfig`
-- [ ] `LICENSE` (Apache-2.0 text), SPDX headers on all source
-  files
-- [ ] `CONTRIBUTING.md` — DCO sign-off mandatory, no AI co-author
-  trailers, branch model (single-branch, semver tags)
-- [ ] `SECURITY.md` — vulnerability reporting
+### Tier 1 — likely shipped first
 
-### 2. OST HTTP client
+1. **Full Saleor integration demo on the VM.** Stage 05 in the
+   v1.0 kickoff stopped short of pulling the full saleor-platform
+   docker stack. Pick that back up: pull
+   <https://github.com/saleor/saleor-platform>, boot it on the
+   demo VM, install our app, run a real `checkoutCreate` mutation
+   against a US ship-to address, confirm tax surfaces. This closes
+   success-criteria.md D2/D5/D6.
 
-- [ ] Copy `opensalestax-medusa/src/providers/opensalestax/client.ts`
-  → `opensalestax-saleor/src/lib/ostax-client.ts`. The client is
-  small (~130 lines), uses global `fetch`, and is platform-agnostic
-  — minimal porting needed. Just update the SPDX header and any
-  Medusa-specific type imports.
-- [ ] Add a small `healthCheck()` method (the Medusa version
-  doesn't have one; the Saleor app's startup probe needs it).
-- [ ] Unit test the client against `nock` or a Node fetch mock.
+2. **GraphQL codegen for the webhook payloads.** Replace the
+   hand-typed `TaxesCalculationPayload` interface with one
+   generated from Saleor's schema via `graphql-codegen`. Adds
+   `@graphql-codegen/cli` + `@graphql-codegen/typescript` as dev
+   deps; a single `npm run codegen` regenerates against the
+   committed schema. Catches schema drift in CI.
 
-### 3. Saleor app wiring
+3. **GHCR image publication.** Build + push tagged Docker images
+   to `ghcr.io/ejosterberg/opensalestax-saleor:vX.Y.Z` so the
+   docker-compose can pull pre-built instead of building from
+   source. Adds a `release.yml` workflow gated on tag push.
 
-- [ ] `src/lib/saleor-app.ts`: instantiate `SaleorApp` from
-  `@saleor/app-sdk`. Configure `EnvAPL` for v0.1
-  (single-tenant). Read `OSTAX_ENGINE_URL`, `OSTAX_API_KEY`,
-  `SALEOR_APP_TOKEN`, `SALEOR_API_URL` from `process.env`.
-- [ ] `src/lib/config.ts` — typed env-var loader with
-  validation. Fail-fast on missing required vars at boot.
+### Tier 2 — when there's user demand
 
-### 4. App manifest + install endpoints
+4. **Per-product tax category mapping.** v1.0 sends every line as
+   category `general`. Map Saleor's tax classes to the OST
+   engine's six categories. Same shape as WooCom v0.3.3 and
+   Odoo v0.1.13.
 
-- [ ] `src/handlers/manifest.ts` — serves
-  `/api/manifest` per the spec in `research/saleor-tax-app.md`
-  §7. Declares the two webhook subscriptions.
-- [ ] `src/handlers/register.ts` — handles
-  `/api/register` (Saleor's install POST). Uses app-sdk's
-  built-in `createAppRegisterHandler`.
+5. **Per-state nexus filter.** Merchant configures a list of US
+   states they have nexus in; checkouts to other states return
+   empty tax. Matches Odoo v0.3.0.
 
-### 5. Tax webhook handlers
+6. **Postgres APL** — multi-tenant token storage. Required if
+   anyone ever hosts this as a SaaS (Decision Y), unnecessary for
+   self-host. Lower priority than features that benefit the
+   merchant directly.
 
-- [ ] `src/transformers/saleor-to-ost.ts`:
-  - Gate: `currency === "USD"`, `address.country.code === "US"`,
-    `address.postalCode` matches `^\d{5}(-\d{4})?$`.
-  - Map: each Saleor line → OST `LineItem` (amount = totalPrice,
-    category = "general" for v0.1).
-  - Shipping: append one extra OST line with the shipping price
-    and category "shipping" (or "general" if engine doesn't yet
-    support a shipping category).
-- [ ] `src/transformers/ost-to-saleor.ts`:
-  - Build per-line `{total_net_amount, total_gross_amount,
-    tax_rate}` from OST's response.
-  - Net = OST line's pre-tax amount; gross = net + tax; rate =
-    tax / net (decimal, not percent).
-  - Shipping rolled up the same way.
-- [ ] `src/handlers/checkout-calculate-taxes.ts` and
-  `src/handlers/order-calculate-taxes.ts`: use app-sdk's
-  `createSyncWebhookHandler`. JWT verification handled by the
-  SDK. Each handler: gate → transform → engine call → transform
-  → respond.
+### Tier 3 — long-running / external
 
-### 6. Server entrypoint
+7. **Saleor App Store submission.** Submit to Saleor's official
+   app directory. Their review cycle is weeks; the connector
+   should accumulate some real-world deployments first.
 
-- [ ] `src/server.ts`: minimal Node `http` server (or `fastify`
-  if we want better routing — adds ~100 KB to the container).
-  Listens on `process.env.PORT || 3000`. Wires the four routes
-  above. Boot-time `console.log` of the OST engine URL +
-  Saleor API URL for ops visibility.
+8. **ESM migration.** Move package.json to `"type": "module"`,
+   adjust tsconfig + Jest ESM config, switch promise chains to
+   top-level await. SonarQube has been nudging this with one
+   MAJOR code smell since v0.1.0.
 
-### 7. Tests
-
-- [ ] Unit tests for both transformers (USD/non-USD gate, US/non-US
-  gate, ZIP regex, shipping handling, rate-decimal math).
-- [ ] Unit test for the OST client.
-- [ ] Integration test: boot the server with a mocked Saleor
-  signing key + a real OST engine container. Send a synthetic
-  webhook POST. Assert the response shape.
-- [ ] Target ≥10 tests at v0.1.0 ship time.
-
-### 8. Packaging
-
-- [ ] `Dockerfile`: multi-stage (build → slim runtime). Final
-  image based on `node:20-alpine`. Target ≤50 MB.
-- [ ] `docker-compose.yml`: this app + an OST engine + the
-  Saleor backend stack from
-  <https://github.com/saleor/saleor-platform>. Wire ports so
-  Saleor can reach the Tax App at
-  `http://opensalestax:3000/api/manifest`.
-- [ ] Document the install flow in `README.md`: docker-compose
-  up, open Saleor dashboard, Apps → Install from URL, paste
-  manifest URL, confirm. Screenshots optional for v0.1.
-
-### 9. Release
-
-- [ ] `CHANGELOG.md` v0.1.0 entry
-- [ ] Tag `v0.1.0`, push to GitHub
-- [ ] Publish to NPM as `@ejosterberg/saleor-app-opensalestax`
-  (if Eric wants NPM distribution — could also ship Docker-only).
-
-## What's deferred to v0.2
-
-- Settings UI (currently env-vars-only)
-- Per-product tax category mapping
-- Per-state nexus filter
-- Operator telemetry (failure streak, mail.activity-equivalent
-  alerts — Saleor doesn't have mail.activity; webhook to
-  email/Slack instead)
-- Saleor App Store submission
-- GraphQL codegen for typed payloads
-- Multi-tenant Postgres APL
+9. **Settings UI.** Embedded app page where merchants configure
+   OST engine URL, fail-hard toggle, etc. — without touching env
+   vars. Needs `@saleor/app-sdk`'s `app-bridge` story to mature.
 
 ## Standing rules
 
 - Apache-2.0; DCO sign-off mandatory; no AI co-author trailers
-- Constitution §5: USD-only; non-US / non-USD = empty tax
-  response (let Saleor fall back)
+- Constitution §5: USD-only; non-US / non-USD → empty tax response
+- Constitution §7: JWT verification mandatory; never bypass
 - Constitution §8: fail-soft default; fail-hard opt-in via env
-- Constitution §7: JWT verification mandatory — never trust
-  webhook source IP
+- Semver tags on a single `main` branch; squash-merge from PRs
 
 ## Pre-flight for the next session
 
 1. Read `specs/constitution.md`
 2. Read `specs/current-state.md`
 3. Read `specs/research/saleor-tax-app.md`
-4. Skim recent commits (`git log --oneline -10`)
-5. Start at task 1 above
+4. Skim recent commits and the most-recent
+   `specs/security/audit-YYYY-MM-DD.md`
+5. Pick a Tier 1 item above and write a phase-NN-<slug>/ spec
+   before writing code
 
-When the alpha ships, log it in `current-state.md` and replace
-this handoff with the v0.2 starting list.
+When v1.1 ships, log it in `current-state.md` and update this
+handoff for v1.2 candidates.

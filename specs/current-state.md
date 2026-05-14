@@ -1,109 +1,118 @@
 # Current State — opensalestax-saleor
 
-**Last updated:** 2026-05-10 (project scaffolded)
-**Status:** **Pre-alpha — specs scaffolded; no code yet.** Eric
-confirmed architecture (raw Node + @saleor/app-sdk, merchant
-self-hosted). Next step: scaffold `package.json` + source layout,
-then implement v0.1.0 alpha (handler for one webhook event, real
-engine call, integration smoke test).
+**Last updated:** 2026-05-13 (v1.0.0 release prep)
+**Status:** **v0.1.0 alpha shipped; v1.0.0 release pending tag.**
+
+## Where we are
+
+- Public GitHub repo at https://github.com/ejosterberg/opensalestax-saleor
+- v0.1.0 alpha implemented per `specs/handoff.md`'s 9-task list:
+  manifest, register, two sync webhook handlers, two transformers,
+  OST client, EnvAPL wiring, raw-Node HTTP server
+- 55 unit tests + 1 live integration test against the OST engine,
+  95% line coverage / 87% branch coverage
+- ESLint + TypeScript strict mode (`exactOptionalPropertyTypes`,
+  `noUncheckedIndexedAccess`); 0 lint errors
+- SonarQube clean at the v1.0 bar: 0 BLOCKER, 0 CRITICAL, security
+  rating A, reliability rating A, 0 unreviewed hotspots
+- OWASP A01-A10 manual review committed at
+  `specs/security/audit-2026-05-13.md`
+- `npm audit --omit=dev --audit-level=high` shows 0 vulnerabilities
+- CI workflow at `.github/workflows/ci.yml` runs lint + typecheck
+  + tests + audit on every push; consistently green on `main`
+- Multi-stage Dockerfile (node:20-alpine, runs as non-root)
+- docker-compose.yml validated on a fresh Debian 13 VM (saleor-demo,
+  VMID 913, `10.32.161.172`) — clone → `docker compose up` → app
+  manifest endpoint responds within ~6 minutes on a fresh host
+- Live demo at http://10.32.161.172:3000 pointed at the shared OST
+  engine; manifest + health endpoints verified working
 
 ## Where the upstream engine is
 
-OpenSalesTax engine — same instance the other connectors point at.
-Pin in production: **v0.22+** (pre-v0.22 had the SD-state-bleed
-bug, closed in v0.22.0). Tested-against version pinned per release.
-v1 HTTP API: `POST /v1/calculate`, `GET /v1/health`,
-`GET /v1/states`, `GET /v1/rates`.
+OpenSalesTax engine — shared dev instance at
+`http://10.32.161.126:8080`, currently reporting v0.55.4 healthy.
+The v1 HTTP API is the connector's contract surface:
+`POST /v1/calculate`, `GET /v1/health`.
 
 ## Where the platform is
 
-Saleor — **v3.20+** is the supported floor. Saleor's Tax App
-framework went GA in 3.14 but the JWKS rotation + v2 webhook
-payload shape stabilized at 3.20.
-
-Tax App webhooks the connector handles:
-
-- `CHECKOUT_CALCULATE_TAXES` — sync; called when a checkout is
-  finalized, gets the per-line tax breakdown response.
-- `ORDER_CALCULATE_TAXES` — sync; called on order create + every
-  line edit on an unfinalized order.
-
-Both are SYNC webhooks (Saleor blocks the checkout/order until we
-respond). Saleor's docs cap the response time at 20s — we target
-≤2s with the OST engine's typical ~50-200 ms RTT.
+Saleor — **v3.20+** is the supported floor (Tax App framework GA
+in 3.14, payload + JWKS stabilized at 3.20). The connector
+subscribes to the sync webhooks `CHECKOUT_CALCULATE_TAXES` and
+`ORDER_CALCULATE_TAXES`.
 
 ## What's shipped
 
-(Nothing yet — this is the project's first session.)
+### v0.1.0 — 2026-05-13 alpha
 
-## What's planned (in order)
+All nine handoff items landed:
 
-### v0.1.0 alpha (this session or next)
+1. ✅ Project bootstrap (package.json, tsconfig strict, Jest config, ESLint)
+2. ✅ OST HTTP client (lifted from Medusa connector; added `healthCheck()`)
+3. ✅ Saleor APL wiring (`EnvAPL`, single-tenant)
+4. ✅ Manifest + register endpoints (delegated to `@saleor/app-sdk`)
+5. ✅ Both sync webhook handlers + shared GraphQL subscription
+6. ✅ Raw Node `http` server with a Web API adapter (no Next.js)
+7. ✅ Unit + integration tests (51 → 55+2 after Stage 06 polish)
+8. ✅ Dockerfile + docker-compose.yml + .dockerignore + .env.example
+9. ✅ CHANGELOG entry + GitHub release pending v1.0.0 tag
 
-- `package.json` with `@saleor/app-sdk` + `@saleor/app-sdk/handlers/next`
-  (the SDK ships sub-paths for Express + raw Node; pick raw Node
-  per Decision B)
-- `src/lib/ostax-client.ts` — minimal HTTP client lifted from the
-  Medusa connector's `client.ts` (~130 lines)
-- `src/lib/saleor-app.ts` — `@saleor/app-sdk` SaleorApp wiring +
-  auth-token storage adapter (Postgres or in-memory for v0.1)
-- `src/handlers/manifest.ts` — Saleor app manifest at
-  `/api/manifest` (declares the two webhook event types + the
-  app's permissions)
-- `src/handlers/register.ts` — Saleor app installation endpoint at
-  `/api/register`
-- `src/handlers/checkout-calculate-taxes.ts` — sync webhook
-  handler; transforms Saleor checkout → OST request, calls
-  engine, transforms response → Saleor tax response
-- `src/handlers/order-calculate-taxes.ts` — same shape, different
-  payload
-- `src/transformers/saleor-to-ost.ts` — payload conversion
-- `src/transformers/ost-to-saleor.ts` — response conversion
-- `Dockerfile` + `docker-compose.yml`
-- `tests/unit/*.test.ts` — Jest unit tests for transformers + the
-  engine-call gate logic
-- `tests/integration/*.test.ts` — boot the app against a mocked
-  Saleor signing key + real OST engine
-- `README.md` with install + Test Connection walkthrough
-- Apache-2.0 LICENSE + SPDX headers + CONTRIBUTING.md (DCO)
+### v1.0.0 — 2026-05-13 production release (pending tag)
 
-### v0.2 polish queue (after v0.1 alpha ships)
+Adds on top of v0.1.0:
 
-- Saleor App Store submission (their review process + listing)
-- Tax category mapping (Saleor's tax classes → OST's six
-  categories — same shape as the WooCom v0.3.3 / Odoo v0.1.13
-  pattern)
-- Per-state nexus filter (matches Odoo v0.3.0)
-- Operator telemetry — last successful calc, failure streak,
-  threshold-crossing webhook (Saleor App webhook events for
-  admin alerts, or a separate notification channel)
-- Exemption-certificate handling
+- SonarQube static-analysis sweep with hotspot dispositions
+- OWASP A01-A10 manual review captured in `specs/security/`
+- Demo deployment validated on a fresh Proxmox VM (saleor-demo,
+  VMID 913) — proves the docker-compose.yml is clone-and-run
+- Minor TypeScript polish (codePointAt, optional chaining)
+
+## What's planned (v1.1 candidates)
+
+These were considered for v1.0 and deferred with documented
+rationale:
+
+- **Full Saleor integration demo** — pull saleor-platform docker
+  stack on the demo VM, install the app via Saleor Dashboard,
+  run a real `checkoutCreate` GraphQL mutation against a US
+  channel, confirm tax surface. Deferred due to wall-clock cost
+  of the full Saleor docker pull (~30-45 min) + brittle GraphQL
+  setup; the engine path is already validated by the live
+  integration test.
+- **Saleor App Store submission** — Saleor's review cycle is
+  weeks; not blocking v1.0.
+- **GraphQL codegen** — typed payloads for the webhook subscription.
+  Hand-typed in v1.0; codegen in v1.1 once payload shape stabilizes.
+- **Postgres APL** — multi-tenant token storage. v1.0 uses EnvAPL
+  (single-tenant), which is what merchant-self-hosted needs.
+- **Settings UI** — currently env-var-only. v1.1 can add a small
+  embedded settings page once the SDK's app-bridge story is settled.
+- **Per-product tax category mapping** — currently every line gets
+  `general`. v1.1 maps Saleor's tax classes to OST categories.
+- **Per-state nexus filter** — opt-in/opt-out per US state.
+- **ESM migration** — currently CommonJS for simpler Jest setup;
+  ESM unlocks top-level await + modern Node module patterns.
 
 ## Spec-folder map
 
 | File | Purpose |
 |---|---|
 | `specs/constitution.md` | Non-negotiable principles (license, architecture, USD-only) |
-| `specs/current-state.md` | This file — snapshot for fresh sessions |
+| `specs/current-state.md` | **This file** — snapshot for fresh sessions |
 | `specs/handoff.md` | What the next session should pick up |
-| `specs/research/saleor-tax-app.md` | Saleor's Tax App framework — webhook shapes, JWT, response payload |
-| `specs/phase-01-alpha/spec.md` | v0.1.0 user stories + functional requirements |
-| `specs/phase-01-alpha/plan.md` | Implementation plan — file layout, dependencies, test strategy |
-| `specs/phase-01-alpha/tasks.md` | Atomic, ordered task list |
-
-(The `phase-01-alpha/` directory is created when the design is
-locked. As of 2026-05-10 it's not yet populated — that's the next
-session's first job.)
+| `specs/demo-deployment.md` | Stage 05 — Proxmox VM, deferral rationale |
+| `specs/research/saleor-tax-app.md` | Saleor's Tax App framework reference |
+| `specs/security/audit-2026-05-13.md` | OWASP A01-A10 walkthrough + SonarQube dispositions |
 
 ## Sibling-project map
 
 | Path | Stack | State |
 |---|---|---|
-| `opensalestax-Odoo/` | Planning hub | active (drives all connector projects) |
-| `opensalestax-python/` | Python SDK | shipped to PyPI |
-| `opensalestax-odoo-src/` | Odoo connector | v0.4.1 shipped on PyPI; OCA PR queued |
-| `opensalestax-medusa/` | Medusa v2 plugin | shipped; NPM `@ejosterberg/medusa-plugin-opensalestax` |
+| `opensalestax-Odoo/` | Planning hub | active |
+| `opensalestax-python/` | Python SDK | shipped (PyPI) |
+| `opensalestax-odoo-src/` | Odoo connector | v0.4.1 (PyPI) |
+| `opensalestax-medusa/` | Medusa v2 plugin | shipped (NPM) |
 | `opensalestax-woocommerce/` | WordPress plugin | shipped |
-| `opensalestax-stripe-php/` | Stripe-PHP connector | shipped, private repo pending Packagist flip |
-| `opensalestax-php/` | PHP SDK | shipped, private repo pending Packagist flip |
-| `opensalestax-saleor/` | **THIS** — Saleor Tax App | pre-alpha, specs only |
+| `opensalestax-stripe-php/` | Stripe-PHP connector | shipped |
+| `opensalestax-php/` | PHP SDK | shipped |
+| **`opensalestax-saleor/`** | **Saleor Tax App** | **v1.0.0 release prep** |
