@@ -26,13 +26,6 @@ once v1.0 is shipped. Pick whichever interests you next.
 
 ### Tier 1 — likely shipped first
 
-0. **Publish v1.0.0 to NPM** (carried over from v1.0; see
-   `specs/decisions/001-npm-publish-deferred.md`). Run
-   `npm login` (or refresh the token in `~/.npmrc`), then
-   `npm publish --access public` from the repo root. Consider
-   adding a `release.yml` GitHub Actions workflow gated on tag
-   push so v1.0.1+ publishes automatically.
-
 1. **Full Saleor integration demo on the VM.** Stage 05 in the
    v1.0 kickoff stopped short of pulling the full saleor-platform
    docker stack. Pick that back up: pull
@@ -55,34 +48,42 @@ once v1.0 is shipped. Pick whichever interests you next.
 
 ### Tier 2 — when there's user demand
 
-4. **Per-product tax category mapping.** v1.0 sends every line as
+4. **ESLint 8 → 9 migration.** ESLint 8 reached end-of-life
+   late 2025; `npm ci` prints deprecation warnings for it and
+   five transitive deps. The migration touches `.eslintrc.cjs`
+   (now a flat `eslint.config.js`), `@typescript-eslint`'s v9
+   API, and the Jest plugin's flat-config story. Not security-
+   sensitive (`npm audit` is clean), but worth doing before any
+   plugin we depend on drops eslint-8 support.
+
+5. **Per-product tax category mapping.** v1.0 sends every line as
    category `general`. Map Saleor's tax classes to the OST
    engine's six categories. Same shape as WooCom v0.3.3 and
    Odoo v0.1.13.
 
-5. **Per-state nexus filter.** Merchant configures a list of US
+6. **Per-state nexus filter.** Merchant configures a list of US
    states they have nexus in; checkouts to other states return
    empty tax. Matches Odoo v0.3.0.
 
-6. **Postgres APL** — multi-tenant token storage. Required if
+7. **Postgres APL** — multi-tenant token storage. Required if
    anyone ever hosts this as a SaaS (Decision Y), unnecessary for
    self-host. Lower priority than features that benefit the
    merchant directly.
 
 ### Tier 3 — long-running / external
 
-7. **Saleor App Store submission.** Submit to Saleor's official
+8. **Saleor App Store submission.** Submit to Saleor's official
    app directory. Their review cycle is weeks; the connector
    should accumulate some real-world deployments first.
 
-8. **ESM migration.** Move package.json to `"type": "module"`,
+9. **ESM migration.** Move package.json to `"type": "module"`,
    adjust tsconfig + Jest ESM config, switch promise chains to
    top-level await. SonarQube has been nudging this with one
    MAJOR code smell since v0.1.0.
 
-9. **Settings UI.** Embedded app page where merchants configure
-   OST engine URL, fail-hard toggle, etc. — without touching env
-   vars. Needs `@saleor/app-sdk`'s `app-bridge` story to mature.
+10. **Settings UI.** Embedded app page where merchants configure
+    OST engine URL, fail-hard toggle, etc. — without touching env
+    vars. Needs `@saleor/app-sdk`'s `app-bridge` story to mature.
 
 ## Standing rules
 

@@ -6,6 +6,32 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-05-13
+
+Housekeeping cut — same runtime code as v1.0.0, plus the
+release-pipeline polish that landed after v1.0.0 shipped.
+
+### Added
+- NPM publication via GitHub Actions Trusted Publishing (OIDC).
+  `.github/workflows/release.yml` triggers on `vX.Y.Z` tag push,
+  re-runs the quality gate, builds, and publishes with
+  `--provenance` attestation. No long-lived NPM tokens anywhere.
+- README badges (NPM version, CI status, license)
+- README "Installing as a library" section pointing at the NPM
+  package for programmatic consumers
+
+### Changed
+- `specs/handoff.md` reorganized: NPM-publish task dropped from
+  Tier 1 (resolved at v1.0.0); ESLint 8 → 9 migration added at
+  Tier 2 (deprecation warnings during `npm ci`, not security-
+  sensitive but worth doing before plugins drop ESLint 8 support)
+- `specs/decisions/001-npm-publish-deferred.md` marked Resolved
+
+### Security
+- Trusted Publishing replaces any need for a long-lived NPM
+  token. Future releases will never write an NPM credential to
+  disk or to a repo secret.
+
 ## [1.0.0] - 2026-05-13
 
 First production release. Same code surface as v0.1.0 plus
@@ -78,6 +104,7 @@ chaining).
   in logs (negative-tested)
 - Container runs as the unprivileged `node` user
 
-[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ejosterberg/opensalestax-saleor/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/ejosterberg/opensalestax-saleor/releases/tag/v0.1.0

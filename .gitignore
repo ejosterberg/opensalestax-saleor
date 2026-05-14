@@ -27,6 +27,9 @@ Thumbs.db
 # Session-local kickoff scratch (contains infra credentials — not for public repo)
 kickoff/
 
+# Claude session state
+.claude/
+
 # SonarQube scanner work directory
 .scannerwork/
 

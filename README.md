@@ -1,5 +1,9 @@
 # opensalestax-saleor
 
+[![npm version](https://img.shields.io/npm/v/@ejosterberg/saleor-app-opensalestax.svg)](https://www.npmjs.com/package/@ejosterberg/saleor-app-opensalestax)
+[![CI](https://github.com/ejosterberg/opensalestax-saleor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ejosterberg/opensalestax-saleor/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 > **Saleor Tax App connector** — destination-based US sales tax via
 > the self-hosted [OpenSalesTax](https://github.com/ejosterberg/opensalestax) engine.
 > No per-transaction fees. No SaaS lock-in. Apache-2.0.
@@ -180,13 +184,28 @@ The OST engine HTTP API is pinned to **v1**; the engine maintains
 backwards compatibility within v1. Cross-major engine bumps will
 land in a new minor of this connector.
 
+## Installing as a library
+
+The connector is also published as an NPM package for programmatic
+consumers (custom Saleor app distributions, monorepos):
+
+```bash
+npm install @ejosterberg/saleor-app-opensalestax
+```
+
+Most merchants don't need this — `git clone` + `docker compose up`
+is the supported install path. The NPM package is published with
+[provenance attestation](https://docs.npmjs.com/generating-provenance-statements)
+so consumers can verify each release was built from this exact
+repo by GitHub Actions.
+
 ## Development
 
 ```bash
 npm ci
 npm run lint
 npm run typecheck
-npm test             # 51 tests, ~12s
+npm test             # 55 tests, ~12s
 npm run check        # lint + typecheck + test + audit (the merge gate)
 ```
 

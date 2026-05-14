@@ -2,8 +2,10 @@
 
 **Date:** 2026-05-13
 **Author:** Kickoff plan executor (Claude session)
-**Status:** Deferred — v1.0 ships GitHub-only; NPM follow-up
-required from Eric
+**Status:** **Resolved 2026-05-13** — package published to NPM as
+v1.0.0 via interactive `npm login` from Eric's workstation;
+Trusted Publishing configured for v1.0.1+ so future releases
+flow through GitHub Actions OIDC without any long-lived tokens.
 
 ## Context
 
@@ -21,23 +23,31 @@ session.
 
 ## Decision
 
-Ship v1.0.0 to GitHub only. Document the deferral here and in
-`specs/handoff.md`. Eric refreshes the NPM token on his next
-workstation session and runs:
+Ship v1.0.0 to GitHub only at first; complete the NPM publish
+out-of-band when Eric had a workstation with working NPM auth.
 
-```bash
-cd opensalestax-saleor
-npm publish --access public
-```
+## Resolution (2026-05-13)
 
-The published artifact will tag as v1.0.0 on NPM (the source of
-truth — git tag, GitHub release, CHANGELOG entry — already
-records v1.0.0; the NPM publish is a distribution mechanism).
+The chosen path turned out cleaner than the original plan:
 
-If Eric prefers, the NPM publish can also be wired into a
-`release.yml` GitHub Actions workflow gated on tag push (using
-`NPM_TOKEN` as a repository secret), which would obviate the
-manual step for v1.0.1+.
+1. Eric ran `git pull && npm ci && npm run build && npm login`
+   from his Windows shell. `npm login` opened a browser flow and
+   used his 2FA — no long-lived token created, no 2FA bypass.
+2. `npm publish --access public` published
+   `@ejosterberg/saleor-app-opensalestax@1.0.0` successfully
+   (https://www.npmjs.com/package/@ejosterberg/saleor-app-opensalestax).
+3. With the package now existing, Eric configured a GitHub
+   Actions Trusted Publisher on it:
+   - org: `ejosterberg`
+   - repo: `opensalestax-saleor`
+   - workflow: `release.yml`
+4. From v1.0.1 onward, releases flow through the OIDC trusted
+   publishing path in `.github/workflows/release.yml`:
+   - `npm version patch && git push --follow-tags` triggers
+     the workflow on the new tag
+   - No NPM token on disk anywhere; no 2FA bypass
+   - Provenance attestation pins each published artifact to
+     the exact commit + workflow run that produced it
 
 ## Alternatives considered
 
@@ -52,8 +62,10 @@ manual step for v1.0.1+.
 
 ## Consequences
 
-- v1.0.0 release notes mention NPM publish is a follow-up step
-- `specs/handoff.md` lists "Publish v1.0.0 to NPM" as the very
-  first v1.1 task
-- Merchants who would consume via NPM are pointed at the GitHub
-  release tarball for v1.0.0 (URL in the README's Quickstart)
+- v1.0.0 was published to NPM on the same day as the GitHub
+  release; both artifacts are at version 1.0.0
+- The Tier-1 "Publish v1.0.0 to NPM" entry in `specs/handoff.md`
+  is removed in the v1.0.1 cleanup commit
+- `.github/workflows/release.yml` exists and is the
+  authoritative release path going forward; v1.0.1 is its first
+  real test run
