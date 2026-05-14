@@ -1,0 +1,94 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Example docker-compose for self-hosting the OpenSalesTax Saleor app
+# alongside an OpenSalesTax engine. The merchant's existing Saleor
+# instance reaches the app at http://opensalestax:3000/api/manifest.
+#
+# Bring up:
+#     docker compose up -d
+#
+# After Saleor's "Install external app" succeeds, copy the values
+# the app prints to stdout (SALEOR_API_URL, SALEOR_APP_ID,
+# SALEOR_APP_TOKEN) into a `.env` file and `docker compose up -d` to
+# persist them across restarts. See `README.md` for the full flow.
+
+services:
+  opensalestax:
+    image: ghcr.io/ejosterberg/opensalestax-saleor:latest
+    # Or, to build from this repo: `build: .`
+    container_name: opensalestax
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Required at boot.
+      APP_API_BASE_URL: "${APP_API_BASE_URL:-http://localhost:3000}"
+      OSTAX_API_URL: "${OSTAX_API_URL:-http://ost-engine:8080}"
+      # Optional — set if your engine requires an API key.
+      OSTAX_API_KEY: "${OSTAX_API_KEY:-}"
+      # Fail-soft (default) returns empty tax on engine error and
+      # lets Saleor fall back. Set to "1" to opt into fail-hard.
+      OSTAX_FAIL_HARD: "${OSTAX_FAIL_HARD:-0}"
+      # Per-request timeout to the engine, in milliseconds.
+      OSTAX_TIMEOUT_MS: "${OSTAX_TIMEOUT_MS:-5000}"
+      # APL seed values — written by Saleor's install POST and
+      # echoed to stdout. Capture them and re-set via `.env` so the
+      # app survives restarts.
+      SALEOR_API_URL: "${SALEOR_API_URL:-}"
+      SALEOR_APP_ID: "${SALEOR_APP_ID:-}"
+      SALEOR_APP_TOKEN: "${SALEOR_APP_TOKEN:-}"
+    depends_on:
+      ost-engine:
+        condition: service_healthy
+    networks:
+      - opensalestax
+
+  ost-engine:
+    # Pin a specific engine release in production. v0.55.4+ confirmed
+    # with this connector; constitution §4 pins the v1 HTTP API.
+    image: ghcr.io/ejosterberg/opensalestax:latest
+    container_name: ost-engine
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgres://ost:${OSTAX_DB_PASSWORD:-ost}@ost-db:5432/ost"
+    depends_on:
+      ost-db:
+        condition: service_healthy
+    networks:
+      - opensalestax
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v1/health | grep -q '\"status\":\"ok\"'"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    # The engine is internal-only by default. If you want to hit it
+    # directly during debugging, uncomment:
+    # ports:
+    #   - "8080:8080"
+
+  ost-db:
+    image: postgres:16-alpine
+    container_name: ost-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ost
+      POSTGRES_PASSWORD: "${OSTAX_DB_PASSWORD:-ost}"
+      POSTGRES_DB: ost
+    volumes:
+      - ost-db-data:/var/lib/postgresql/data
+    networks:
+      - opensalestax
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ost -d ost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+networks:
+  opensalestax:
+    driver: bridge
+
+volumes:
+  ost-db-data:

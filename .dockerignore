@@ -1,0 +1,17 @@
+node_modules
+dist
+coverage
+.git
+.github
+.claude
+kickoff
+specs
+tests
+*.log
+.env*
+.editorconfig
+.eslintrc.cjs
+.gitignore
+.gitattributes
+*.md
+!README.md
