@@ -8,6 +8,8 @@
  * surface immediately, not as silent JWT verification skips.
  */
 
+import { stripTrailingSlashes } from './url';
+
 export interface AppConfig {
   /** Port the HTTP server listens on. Default 3000. */
   port: number;
@@ -94,8 +96,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   return {
     port: parsePort(env.PORT, 3000),
-    appBaseUrl: appBaseUrl.replace(/\/+$/, ''),
-    ostaxApiUrl: ostaxApiUrl.replace(/\/+$/, ''),
+    appBaseUrl: stripTrailingSlashes(appBaseUrl),
+    ostaxApiUrl: stripTrailingSlashes(ostaxApiUrl),
     ostaxApiKey: env.OSTAX_API_KEY ?? undefined,
     ostaxTimeoutMs: parseTimeout(env.OSTAX_TIMEOUT_MS, 5000),
     failHard: parseBool(env.OSTAX_FAIL_HARD),

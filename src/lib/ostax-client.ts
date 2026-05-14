@@ -8,6 +8,8 @@
  * HTTP contract is identical, only the package boundary changes.
  */
 
+import { stripTrailingSlashes } from './url';
+
 export interface OpenSalesTaxClientOptions {
   baseUrl: string;
   apiKey?: string;
@@ -88,7 +90,7 @@ export class OpenSalesTaxClient {
   private readonly timeoutMs: number;
 
   constructor(options: OpenSalesTaxClientOptions) {
-    this.baseUrl = options.baseUrl.replace(/\/+$/, '');
+    this.baseUrl = stripTrailingSlashes(options.baseUrl);
     if (options.apiKey !== undefined) {
       this.apiKey = options.apiKey;
     }
