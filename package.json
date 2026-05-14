@@ -37,7 +37,8 @@
     "test": "jest",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm test -- --coverage && npm audit --omit=dev --audit-level=high"
+    "check": "npm run lint && npm run typecheck && npm test -- --coverage && npm audit --omit=dev --audit-level=high",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@saleor/app-sdk": "^1.8.0",
