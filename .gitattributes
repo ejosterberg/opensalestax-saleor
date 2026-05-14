@@ -1,0 +1,11 @@
+# Normalize line endings — LF in repo, native in working tree on Windows
+* text=auto eol=lf
+
+# Explicitly binary
+*.png binary
+*.jpg binary
+*.ico binary
+
+# Force LF for shell scripts (don't run otherwise)
+*.sh text eol=lf
+Dockerfile text eol=lf
