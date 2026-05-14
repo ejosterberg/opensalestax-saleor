@@ -12,8 +12,15 @@ name: release
 # The workflow re-runs the full quality gate (`npm run check`) before
 # publishing so a stale `main` can't ship if it slipped post-tag.
 #
-# Token: NPM_TOKEN repo secret. Generate at https://www.npmjs.com/settings/<your-account>/tokens
-# (granular token recommended; scope: publish; package: @ejosterberg/saleor-app-opensalestax).
+# Auth: NPM Trusted Publishing (OIDC). No long-lived NPM_TOKEN
+# required — the workflow exchanges a GitHub OIDC token for a
+# short-lived NPM auth token at publish time. Configure the
+# trusted publisher once on npmjs.com under the package's
+# (or user's) "Trusted Publishers" settings page:
+#   organization: ejosterberg
+#   repository:   opensalestax-saleor
+#   workflow:     release.yml
+#   environment:  (leave empty)
 
 on:
   workflow_dispatch:
@@ -23,7 +30,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # enables NPM provenance attestation (--provenance)
+  id-token: write   # required for OIDC trusted publishing + provenance
 
 jobs:
   publish:
@@ -35,9 +42,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
           cache: npm
+
+      # Trusted publishing needs npm >= 11.5. Node 22 ships a recent
+      # npm, but bump explicitly so the runner image's version doesn't
+      # silently regress us.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -48,7 +61,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Publish
+      - name: Publish (trusted publishing + provenance)
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
