@@ -1,6 +1,6 @@
 {
   "name": "@ejosterberg/saleor-app-opensalestax",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Saleor Tax App connector — destination-based US sales tax via the self-hosted OpenSalesTax engine",
   "license": "Apache-2.0",
   "author": "Eric Osterberg <ejosterberg@gmail.com>",

@@ -6,6 +6,33 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-05-14
+
+Trusted Publishing pipeline now works end-to-end. No runtime
+behavior changes; pure release-plumbing fix.
+
+### Changed
+- Bump release-workflow runner Node version from 22 to 24 LTS.
+  Diagnosed via `npm publish --loglevel verbose` (per NPM
+  support's debugging guidance): Node 22.22.2 ships npm 10.9.7,
+  but NPM Trusted Publishing requires npm ≥ 11.5 for the OIDC
+  auth handshake (npm 10.x can sign provenance attestations but
+  can't authenticate the publish itself via OIDC, falling back to
+  no-auth which NPM rejects as E404). Node 24 LTS ships npm 11.x
+  natively, sidestepping the in-place `npm install -g npm@latest`
+  step that self-corrupts on the runner.
+- Release workflow now binds to the `npm-publish` GitHub
+  Environment, matching the NPM Trusted Publisher's
+  Environment field. Adds a runtime-env diagnostic block before
+  publish for future support visibility.
+
+### Note
+v1.0.3 is the first release published via Trusted Publishing
+(OIDC); v1.0.0 through v1.0.2 were published from a local
+terminal or via granular token. v1.0.3's NPM artifact will be
+the first to carry a provenance attestation tying it
+cryptographically to this exact commit + workflow run.
+
 ## [1.0.2] - 2026-05-13
 
 Maintenance patch. No runtime behavior changes; pure dev-time
@@ -124,7 +151,8 @@ chaining).
   in logs (negative-tested)
 - Container runs as the unprivileged `node` user
 
-[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ejosterberg/opensalestax-saleor/compare/v0.1.0...v1.0.0
