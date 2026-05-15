@@ -9,14 +9,22 @@ permissions:
 
 jobs:
   ci:
-    name: lint + typecheck + test + audit
+    name: ci (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Validate the supported Node range:
+        #   20 — package.json `engines.node` floor
+        #   22 — current LTS
+        #   24 — newest LTS (matches the release workflow's runner)
+        node: ["20", "22", "24"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: ${{ matrix.node }}
           cache: npm
       - name: Install dependencies
         run: npm ci
@@ -29,7 +37,9 @@ jobs:
       - name: Audit (production deps, high+)
         run: npm audit --omit=dev --audit-level=high
       - name: Upload coverage
-        if: always()
+        # Only upload from one matrix job — the lcov.info is identical
+        # across runners, no value in three uploads.
+        if: matrix.node == '20'
         uses: actions/upload-artifact@v7
         with:
           name: coverage

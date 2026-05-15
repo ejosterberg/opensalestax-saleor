@@ -6,6 +6,24 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-05-14
+
+Quality + maintenance. No runtime behavior changes.
+
+### Added
+- **CI matrix over Node 20 / 22 / 24.** Until now CI only ran on
+  the floor (`engines.node` = 20). The matrix now validates the
+  whole supported range and the runner used by the release
+  pipeline, catching forward-compat regressions if a dep
+  silently drops Node 20 support.
+- **Dependabot configuration.** Weekly auto-PRs for npm + GitHub
+  Actions updates. Dev-dependency patch/minor bumps are grouped
+  into a single PR to cut churn; major bumps surface individually
+  for explicit review.
+- **`CONTRIBUTING.md` — "Cutting a release" section.** Documents
+  the new tag-and-push Trusted Publishing flow + how consumers
+  can verify provenance via `npm audit signatures`.
+
 ## [1.0.3] - 2026-05-14
 
 Trusted Publishing pipeline now works end-to-end. No runtime
@@ -151,7 +169,8 @@ chaining).
   in logs (negative-tested)
 - Container runs as the unprivileged `node` user
 
-[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.0...v1.0.1
