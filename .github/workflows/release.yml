@@ -68,24 +68,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Diagnostic block requested by NPM support — captures the
-      # registry config + ping + npm version that's actually
-      # running, so support can validate what we're presenting.
-      - name: Diagnostic — runtime env
-        run: |
-          echo "=== node + npm versions ==="
-          node --version
-          npm --version
-          echo "=== npm registry config ==="
-          npm config get registry
-          echo "=== npm full config ==="
-          npm config list -l 2>&1 | grep -v "_authToken\|password\|secret" || true
-          echo "=== npm ping ==="
-          npm ping --registry=https://registry.npmjs.org
-          echo "=== package.json head ==="
-          head -n 60 package.json
-          echo "=== current published version ==="
-          npm view @ejosterberg/saleor-app-opensalestax name version --registry=https://registry.npmjs.org || true
-
-      - name: Publish (trusted publishing + provenance, verbose)
-        run: npm publish --tag latest --access public --provenance --loglevel verbose
+      - name: Publish (trusted publishing + provenance)
+        run: npm publish --access public --provenance
