@@ -14,12 +14,17 @@
 
 services:
   opensalestax:
-    # Build from source by default — every merchant gets the same
-    # bytes they audited in the repo. Comment this out and uncomment
-    # the `image:` line below to pull a pre-built tagged release
-    # from GitHub Container Registry instead.
-    build: .
-    # image: ghcr.io/ejosterberg/opensalestax-saleor:v0.1.0
+    # Pull a prebuilt multi-arch image from GitHub Container
+    # Registry (default). Images are published on every release
+    # via .github/workflows/docker-publish.yml with SLSA provenance
+    # attestation. Verify provenance with `cosign verify-attestation
+    # --type slsaprovenance --certificate-identity-regexp ...`.
+    #
+    # To build from source instead (audit the bytes before
+    # running), comment out the `image:` line and uncomment
+    # `build: .`.
+    image: ghcr.io/ejosterberg/opensalestax-saleor:latest
+    # build: .
     container_name: opensalestax
     restart: unless-stopped
     ports:

@@ -44,6 +44,14 @@ calls the engine over your private network.
    ```
    Three containers start: the Saleor Tax App, the OpenSalesTax engine, and a Postgres for the engine.
 
+   The shipped `docker-compose.yml` pulls a multi-arch prebuilt
+   image from GitHub Container Registry
+   (`ghcr.io/ejosterberg/opensalestax-saleor:latest`) that's
+   signed with SLSA provenance attesting it was built from this
+   repo's tagged release commit. If you'd rather audit the source
+   and build locally, swap the `image:` line for `build: .` in
+   `docker-compose.yml`.
+
 3. **Verify the app is healthy**
    ```bash
    curl http://localhost:3000/health
@@ -178,7 +186,8 @@ Dashboard, capture the new token from app stdout, and update
 |---|---|
 | Saleor | v3.20+ (GA Tax App framework) |
 | OpenSalesTax engine | v0.55.4 (HTTP API v1) |
-| Node | v20 LTS |
+| Node | v20 LTS (tested 20 / 22 / 24 in CI) |
+| Container image | `linux/amd64`, `linux/arm64` |
 
 The OST engine HTTP API is pinned to **v1**; the engine maintains
 backwards compatibility within v1. Cross-major engine bumps will

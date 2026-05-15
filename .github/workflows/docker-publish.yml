@@ -1,0 +1,80 @@
+name: docker-publish
+
+# Builds and publishes the multi-arch Docker image to GitHub
+# Container Registry (ghcr.io). Mirrors the NPM Trusted Publishing
+# pipeline:
+#   * Triggered on vX.Y.Z tag push (same trigger as release.yml)
+#   * Also exposes workflow_dispatch for out-of-band rebuilds
+#   * Uses GITHUB_TOKEN — no extra secrets required
+#   * Attaches build provenance (SLSA v1) + SBOM to each image
+#
+# Image tags produced per release:
+#   ghcr.io/<owner>/<repo>:<X.Y.Z>     — exact version
+#   ghcr.io/<owner>/<repo>:<X.Y>       — minor track (rolling)
+#   ghcr.io/<owner>/<repo>:<X>         — major track (rolling)
+#   ghcr.io/<owner>/<repo>:latest      — newest stable
+#
+# Platforms: linux/amd64, linux/arm64.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write   # push to ghcr.io
+  id-token: write   # SLSA provenance attestation
+
+jobs:
+  publish:
+    name: build + push multi-arch image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      # Multi-platform support via QEMU emulation for arm64
+      # cross-compile on the amd64 GitHub runner.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+          labels: |
+            org.opencontainers.image.title=opensalestax-saleor
+            org.opencontainers.image.description=Saleor Tax App connector for the OpenSalesTax engine
+            org.opencontainers.image.licenses=Apache-2.0
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true

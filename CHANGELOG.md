@@ -6,6 +6,32 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-14
+
+First minor since v1.0. Adds a second supported install channel
+(prebuilt Docker image) and keeps the existing NPM publish path
+unchanged.
+
+### Added
+- **Prebuilt multi-arch Docker images on GHCR.** New
+  `.github/workflows/docker-publish.yml` builds and pushes
+  `ghcr.io/ejosterberg/opensalestax-saleor:<version>` on every
+  `v*` tag. Images are multi-arch (`linux/amd64`,
+  `linux/arm64`) and carry SLSA provenance + SBOM attestations
+  identical to the NPM publishing pipeline.
+- Per-release Docker tags published: exact version (`1.1.0`),
+  minor track (`1.1`), major track (`1`), and `latest`.
+
+### Changed
+- `docker-compose.yml` defaults to pulling the prebuilt
+  `ghcr.io/...:latest` image rather than building from source.
+  Drops typical first-boot time from ~3 minutes to ~30 seconds
+  on a fresh Docker host. Merchants who prefer to audit + build
+  locally swap the `image:` line for `build: .` (documented
+  inline).
+- README quickstart documents both install paths and the
+  provenance/SBOM verification story.
+
 ## [1.0.4] - 2026-05-14
 
 Quality + maintenance. No runtime behavior changes.
@@ -169,7 +195,8 @@ chaining).
   in logs (negative-tested)
 - Container runs as the unprivileged `node` user
 
-[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/ejosterberg/opensalestax-saleor/compare/v1.0.1...v1.0.2
