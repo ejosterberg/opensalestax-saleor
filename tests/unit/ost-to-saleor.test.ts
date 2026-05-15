@@ -4,15 +4,16 @@ import {
   buildSaleorResponse,
   emptyTaxResponse,
 } from '../../src/transformers/ost-to-saleor';
-import type { CalculateResponse } from '../../src/lib/ostax-client';
+import type { CalculationResult } from '@ejosterberg/opensalestax';
 
 function ostLine(amount: string, tax: string, ratePct: string) {
   return {
     amount,
     category: 'general',
     tax,
-    rate_pct: ratePct,
+    ratePct,
     jurisdictions: [],
+    note: null,
   };
 }
 
@@ -29,18 +30,24 @@ describe('emptyTaxResponse', () => {
 
 describe('buildSaleorResponse', () => {
   it('returns empty response when OST returned no lines', () => {
-    const ost: CalculateResponse = { subtotal: '0', tax_total: '0', lines: [] };
+    const ost: CalculationResult = {
+      subtotal: '0',
+      taxTotal: '0',
+      lines: [],
+      disclaimer: '',
+    };
     expect(buildSaleorResponse(ost, null)).toEqual(emptyTaxResponse());
   });
 
   it('builds per-line totals with decimal tax rate', () => {
-    const ost: CalculateResponse = {
+    const ost: CalculationResult = {
       subtotal: '200.00',
-      tax_total: '15.75',
+      taxTotal: '15.75',
       lines: [
         ostLine('100.00', '7.875', '7.875'),
         ostLine('100.00', '7.875', '7.875'),
       ],
+      disclaimer: '',
     };
     const out = buildSaleorResponse(ost, null);
     expect(out.lines).toHaveLength(2);
@@ -53,13 +60,14 @@ describe('buildSaleorResponse', () => {
   });
 
   it('extracts the shipping line at the configured index', () => {
-    const ost: CalculateResponse = {
+    const ost: CalculationResult = {
       subtotal: '110.00',
-      tax_total: '8.66',
+      taxTotal: '8.66',
       lines: [
         ostLine('100.00', '7.875', '7.875'),
         ostLine('10.00', '0.7875', '7.875'),
       ],
+      disclaimer: '',
     };
     const out = buildSaleorResponse(ost, 1);
     expect(out.lines).toHaveLength(1);
@@ -70,10 +78,11 @@ describe('buildSaleorResponse', () => {
   });
 
   it('treats an out-of-range shipping index as no shipping', () => {
-    const ost: CalculateResponse = {
+    const ost: CalculationResult = {
       subtotal: '100.00',
-      tax_total: '7.88',
+      taxTotal: '7.88',
       lines: [ostLine('100.00', '7.875', '7.875')],
+      disclaimer: '',
     };
     const out = buildSaleorResponse(ost, 5);
     expect(out.shipping_price_net_amount).toBe(0);
@@ -81,10 +90,11 @@ describe('buildSaleorResponse', () => {
   });
 
   it('rounds gross to 2 decimals', () => {
-    const ost: CalculateResponse = {
+    const ost: CalculationResult = {
       subtotal: '0',
-      tax_total: '0',
+      taxTotal: '0',
       lines: [ostLine('33.33', '2.5831', '7.749')],
+      disclaimer: '',
     };
     const out = buildSaleorResponse(ost, null);
     expect(out.lines[0]?.total_gross_amount).toBe(35.91);
@@ -92,10 +102,11 @@ describe('buildSaleorResponse', () => {
   });
 
   it('converts percent string to decimal rate', () => {
-    const ost: CalculateResponse = {
+    const ost: CalculationResult = {
       subtotal: '0',
-      tax_total: '0',
+      taxTotal: '0',
       lines: [ostLine('100.00', '8.025', '8.025')],
+      disclaimer: '',
     };
     const out = buildSaleorResponse(ost, null);
     expect(out.lines[0]?.tax_rate).toBeCloseTo(0.08025, 5);

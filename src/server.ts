@@ -13,7 +13,7 @@ import http from 'node:http';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import { loadConfig } from './lib/config';
-import { OpenSalesTaxClient } from './lib/ostax-client';
+import { OpenSalesTaxClient } from '@ejosterberg/opensalestax';
 import { createSaleorApp } from './lib/saleor-app';
 
 import { createManifestRouteHandler } from './handlers/manifest';
@@ -99,6 +99,11 @@ export async function startServer(): Promise<ServerHandle> {
     baseUrl: config.ostaxApiUrl,
     ...(config.ostaxApiKey !== undefined ? { apiKey: config.ostaxApiKey } : {}),
     timeoutMs: config.ostaxTimeoutMs,
+    // Merchants typically run the engine on the same private network
+    // as Saleor (Docker compose, K8s cluster, LAN). Allow private-IP
+    // engine URLs; the SDK's SSRF defense is off by default for this
+    // class of deployment.
+    allowPrivate: true,
   });
 
   const checkout = buildCheckoutCalculateTaxesWebhook({
@@ -206,7 +211,7 @@ export async function startServer(): Promise<ServerHandle> {
             level: 'info',
             msg: 'engine.healthy',
             version: h.version,
-            rtt_ms: h.rtt_ms,
+            rtt_ms: h.rttMs,
           }),
         );
       } else {
@@ -215,7 +220,7 @@ export async function startServer(): Promise<ServerHandle> {
             level: 'warn',
             msg: 'engine.unreachable_at_boot',
             error: h.error,
-            rtt_ms: h.rtt_ms,
+            rtt_ms: h.rttMs,
           }),
         );
       }

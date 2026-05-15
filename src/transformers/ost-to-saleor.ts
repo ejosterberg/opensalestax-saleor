@@ -23,7 +23,7 @@
  * Tax rate is decimal (0.07690), not percent (7.690).
  */
 
-import type { CalculatedLine, CalculateResponse } from '../lib/ostax-client';
+import type { CalculatedLine, CalculationResult } from '@ejosterberg/opensalestax';
 
 export interface SaleorTaxLineResponse {
   total_gross_amount: number;
@@ -70,7 +70,7 @@ function buildLineResponse(line: CalculatedLine): SaleorTaxLineResponse {
   return {
     total_net_amount: round2(net),
     total_gross_amount: round2(net + tax),
-    tax_rate: pctStringToDecimal(line.rate_pct),
+    tax_rate: pctStringToDecimal(line.ratePct),
   };
 }
 
@@ -82,7 +82,7 @@ function buildLineResponse(line: CalculatedLine): SaleorTaxLineResponse {
  * shipping values.
  */
 export function buildSaleorResponse(
-  ostResponse: CalculateResponse,
+  ostResponse: CalculationResult,
   shippingIndex: number | null,
 ): SaleorTaxResponse {
   if (!Array.isArray(ostResponse.lines) || ostResponse.lines.length === 0) {

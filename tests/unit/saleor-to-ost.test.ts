@@ -45,7 +45,7 @@ describe('buildOstRequest — gating', () => {
       makeBase({ address: { country: { code: 'US' }, postalCode: '55403-1234' } }),
     );
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.request.address.zip5).toBe('55403');
+    if (result.ok) expect(result.address.zip5).toBe('55403');
   });
 
   it('returns no-lines when lines[] is empty', () => {
@@ -67,12 +67,12 @@ describe('buildOstRequest — line mapping', () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.request.line_items).toHaveLength(2);
-    expect(result.request.line_items[0]).toEqual({
+    expect(result.lineItems).toHaveLength(2);
+    expect(result.lineItems[0]).toEqual({
       amount: '100.00',
       category: 'general',
     });
-    expect(result.request.line_items[1]).toEqual({
+    expect(result.lineItems[1]).toEqual({
       amount: '50.50',
       category: 'general',
     });
@@ -84,8 +84,8 @@ describe('buildOstRequest — line mapping', () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.request.line_items).toHaveLength(2);
-    expect(result.request.line_items[1]).toEqual({
+    expect(result.lineItems).toHaveLength(2);
+    expect(result.lineItems[1]).toEqual({
       amount: '10.00',
       category: 'shipping',
     });
@@ -95,7 +95,7 @@ describe('buildOstRequest — line mapping', () => {
     const result = buildOstRequest(makeBase({ shippingPrice: { amount: 0 } }));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.request.line_items).toHaveLength(1);
+    expect(result.lineItems).toHaveLength(1);
   });
 
   it('omits the shipping line when shippingPrice is missing', () => {
@@ -104,7 +104,7 @@ describe('buildOstRequest — line mapping', () => {
     const result = buildOstRequest(base);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.request.line_items).toHaveLength(1);
+    expect(result.lineItems).toHaveLength(1);
   });
 
   it('formats decimal amounts to 2 fractional digits', () => {
@@ -113,6 +113,6 @@ describe('buildOstRequest — line mapping', () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.request.line_items[0]?.amount).toBe('100.00');
+    expect(result.lineItems[0]?.amount).toBe('100.00');
   });
 });

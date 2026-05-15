@@ -14,7 +14,7 @@
  * 5xx so Saleor blocks the checkout.
  */
 
-import type { OpenSalesTaxClient } from '../lib/ostax-client';
+import type { OpenSalesTaxClient } from '@ejosterberg/opensalestax';
 import { buildOstRequest } from '../transformers/saleor-to-ost';
 import {
   buildSaleorResponse,
@@ -83,16 +83,16 @@ export async function handleTaxCalculation(
 
   const productLineCount = taxBase.lines.length;
   const shippingIndex =
-    gated.request.line_items.length > productLineCount ? productLineCount : null;
+    gated.lineItems.length > productLineCount ? productLineCount : null;
 
   try {
     const start = Date.now();
-    const ostResponse = await deps.client.calculate(gated.request);
+    const ostResponse = await deps.client.calculate(gated.address, gated.lineItems);
     const rtt = Date.now() - start;
     log.info('tax_calc.ok', {
       event: ctx.eventType,
       rtt_ms: rtt,
-      tax_total: ostResponse.tax_total,
+      tax_total: ostResponse.taxTotal,
     });
     return buildSaleorResponse(ostResponse, shippingIndex);
   } catch (err) {

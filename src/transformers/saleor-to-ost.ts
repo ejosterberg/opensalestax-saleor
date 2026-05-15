@@ -12,7 +12,7 @@
  * an empty tax response so Saleor falls back to its catalog rates.
  */
 
-import type { CalculateLineItem, CalculateRequest } from '../lib/ostax-client';
+import type { Address, LineItem } from '@ejosterberg/opensalestax';
 
 /** A single Saleor tax line — fields the connector reads. */
 export interface SaleorTaxLine {
@@ -43,7 +43,8 @@ export interface GateFailure {
 
 export interface GateSuccess {
   ok: true;
-  request: CalculateRequest;
+  address: Address;
+  lineItems: LineItem[];
 }
 
 export type SaleorToOstResult = GateFailure | GateSuccess;
@@ -79,7 +80,7 @@ export function buildOstRequest(taxBase: SaleorTaxBase): SaleorToOstResult {
     return { ok: false, reason: 'no-lines', detail: 'lines[] empty' };
   }
 
-  const lineItems: CalculateLineItem[] = taxBase.lines.map((line) => ({
+  const lineItems: LineItem[] = taxBase.lines.map((line) => ({
     amount: formatAmount(line.totalPrice.amount),
     category: 'general',
   }));
@@ -94,9 +95,7 @@ export function buildOstRequest(taxBase: SaleorTaxBase): SaleorToOstResult {
 
   return {
     ok: true,
-    request: {
-      address: { zip5 },
-      line_items: lineItems,
-    },
+    address: { zip5 },
+    lineItems,
   };
 }

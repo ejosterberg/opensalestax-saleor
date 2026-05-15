@@ -9,7 +9,7 @@
  * `http://10.32.161.126:8080` if the env var is exported.
  */
 
-import { OpenSalesTaxClient } from '../../src/lib/ostax-client';
+import { OpenSalesTaxClient } from '@ejosterberg/opensalestax';
 import { handleTaxCalculation } from '../../src/handlers/tax-handler';
 import type { TaxesCalculationPayload } from '../../src/handlers/subscription';
 
@@ -17,7 +17,15 @@ const baseUrl = process.env.OSTAX_API_URL;
 const describeIfEngine = baseUrl !== undefined && baseUrl !== '' ? describe : describe.skip;
 
 describeIfEngine('end-to-end with real OST engine', () => {
-  const client = new OpenSalesTaxClient({ baseUrl: baseUrl ?? '' });
+  let client: OpenSalesTaxClient;
+  beforeAll(() => {
+    // Constructed inside beforeAll so describe.skip avoids the URL
+    // validator running with `baseUrl: ''` (now rejected by the SDK).
+    client = new OpenSalesTaxClient({
+      baseUrl: baseUrl ?? '',
+      allowPrivate: true,
+    });
+  });
 
   it('reports healthy', async () => {
     const h = await client.healthCheck();

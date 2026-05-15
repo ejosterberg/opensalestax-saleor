@@ -6,6 +6,40 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-14
+
+Drop the embedded `OpenSalesTaxClient` in favor of the standalone
+`@ejosterberg/opensalestax` SDK (v0.1.0+). No connector-facing
+behavior changes; the HTTP wire contract with the OpenSalesTax engine
+is identical.
+
+### Changed
+- Depend on `@ejosterberg/opensalestax@^0.1.0` instead of the
+  embedded `src/lib/ostax-client.ts`. Constitution §6 / playbook
+  trigger.
+- Pass `allowPrivate: true` to the SDK client — Saleor connector
+  merchants almost always run the engine on the same private
+  network. The SDK's SSRF defense is off by default for this
+  deployment class.
+- Property accesses moved from snake_case to camelCase to match
+  the SDK's TS surface (`tax_total` → `taxTotal`, `rate_pct` →
+  `ratePct`). The Saleor wire shape (`tax_rate`,
+  `total_net_amount`, ...) is unchanged.
+- Internal `buildOstRequest` now returns `{ address, lineItems }`
+  separately instead of a single `CalculateRequest` body (matches
+  the SDK's `client.calculate(address, lineItems)` signature).
+
+### Removed
+- `src/lib/ostax-client.ts` and `src/lib/url.ts` — the SDK ships
+  both (`stripTrailingSlashes` is re-exported from the SDK).
+- `tests/unit/ostax-client.test.ts` and `tests/unit/url.test.ts`
+  — the SDK's own test suite covers this surface.
+
+### Migration
+
+Existing consumers of this Saleor app don't need to do anything.
+Internal-only refactor.
+
 ## [1.0.3] - 2026-05-14
 
 Trusted Publishing pipeline now works end-to-end. No runtime

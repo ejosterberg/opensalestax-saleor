@@ -8,7 +8,7 @@
  * surface immediately, not as silent JWT verification skips.
  */
 
-import { stripTrailingSlashes } from './url';
+import { stripTrailingSlashes } from '@ejosterberg/opensalestax';
 
 export interface AppConfig {
   /** Port the HTTP server listens on. Default 3000. */

@@ -7,12 +7,15 @@ import {
 import type { Logger } from '../../src/handlers/tax-handler';
 import type { TaxesCalculationPayload } from '../../src/handlers/subscription';
 import type {
-  CalculateRequest,
-  CalculateResponse,
+  Address,
+  CalculationResult,
+  LineItem,
   OpenSalesTaxClient,
-} from '../../src/lib/ostax-client';
+} from '@ejosterberg/opensalestax';
 
-function fakeClient(impl: (req: CalculateRequest) => Promise<CalculateResponse>): OpenSalesTaxClient {
+function fakeClient(
+  impl: (address: Address, lineItems: LineItem[]) => Promise<CalculationResult>,
+): OpenSalesTaxClient {
   // Cast through unknown so we can supply a mock with only `calculate`
   // (we don't exercise `health`/`healthCheck` paths in this suite).
   return { calculate: impl } as unknown as OpenSalesTaxClient;
@@ -64,19 +67,23 @@ describe('handleTaxCalculation', () => {
   });
 
   it('calls engine and transforms response for USD/US payload', async () => {
-    const calc = jest.fn(() => Promise.resolve({
-      subtotal: '100.00',
-      tax_total: '7.88',
-      lines: [
-        {
-          amount: '100.00',
-          category: 'general',
-          tax: '7.88',
-          rate_pct: '7.88',
-          jurisdictions: [],
-        },
-      ],
-    }));
+    const calc = jest.fn(() =>
+      Promise.resolve<CalculationResult>({
+        subtotal: '100.00',
+        taxTotal: '7.88',
+        lines: [
+          {
+            amount: '100.00',
+            category: 'general',
+            tax: '7.88',
+            ratePct: '7.88',
+            jurisdictions: [],
+            note: null,
+          },
+        ],
+        disclaimer: '',
+      }),
+    );
     const res = await handleTaxCalculation(makePayload(), CTX, {
       client: fakeClient(calc),
       failHard: false,
@@ -111,26 +118,31 @@ describe('handleTaxCalculation', () => {
   });
 
   it('handles shipping line: extracts shipping from synthetic last OST line', async () => {
-    const calc = jest.fn(() => Promise.resolve({
-      subtotal: '110.00',
-      tax_total: '8.66',
-      lines: [
-        {
-          amount: '100.00',
-          category: 'general',
-          tax: '7.88',
-          rate_pct: '7.88',
-          jurisdictions: [],
-        },
-        {
-          amount: '10.00',
-          category: 'shipping',
-          tax: '0.79',
-          rate_pct: '7.88',
-          jurisdictions: [],
-        },
-      ],
-    }));
+    const calc = jest.fn(() =>
+      Promise.resolve<CalculationResult>({
+        subtotal: '110.00',
+        taxTotal: '8.66',
+        lines: [
+          {
+            amount: '100.00',
+            category: 'general',
+            tax: '7.88',
+            ratePct: '7.88',
+            jurisdictions: [],
+            note: null,
+          },
+          {
+            amount: '10.00',
+            category: 'shipping',
+            tax: '0.79',
+            ratePct: '7.88',
+            jurisdictions: [],
+            note: null,
+          },
+        ],
+        disclaimer: '',
+      }),
+    );
     const res = await handleTaxCalculation(
       makePayload({ shippingPrice: { amount: 10 } }),
       CTX,
@@ -148,19 +160,23 @@ describe('handleTaxCalculation', () => {
       warn: () => undefined,
       error: () => undefined,
     };
-    const calc = jest.fn(() => Promise.resolve({
-      subtotal: '100.00',
-      tax_total: '7.88',
-      lines: [
-        {
-          amount: '100.00',
-          category: 'general',
-          tax: '7.88',
-          rate_pct: '7.88',
-          jurisdictions: [],
-        },
-      ],
-    }));
+    const calc = jest.fn(() =>
+      Promise.resolve<CalculationResult>({
+        subtotal: '100.00',
+        taxTotal: '7.88',
+        lines: [
+          {
+            amount: '100.00',
+            category: 'general',
+            tax: '7.88',
+            ratePct: '7.88',
+            jurisdictions: [],
+            note: null,
+          },
+        ],
+        disclaimer: '',
+      }),
+    );
     await handleTaxCalculation(makePayload(), CTX, {
       client: fakeClient(calc),
       failHard: false,
