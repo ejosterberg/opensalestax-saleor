@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Minimal HTTP client for the OpenSalesTax engine.
  *
- * Uses the global `fetch` available on Node 20+ — no axios / node-fetch
+ * Uses the global `fetch` available on Node 20+ â€” no axios / node-fetch
  * dependency. Lifted from `opensalestax-medusa`'s client.ts; the engine
  * HTTP contract is identical, only the package boundary changes.
  */
@@ -102,7 +102,7 @@ export class OpenSalesTaxClient {
     return this.post<CalculateResponse>('/v1/calculate', req);
   }
 
-  /** Raw engine health payload — `{ status, version, database_connected }`. */
+  /** Raw engine health payload â€” `{ status, version, database_connected }`. */
   async health(): Promise<EngineHealth> {
     return this.get<EngineHealth>('/v1/health');
   }
@@ -110,7 +110,7 @@ export class OpenSalesTaxClient {
   /**
    * Liveness probe wrapper with RTT measurement and never-throws contract.
    *
-   * Used by the Saleor app's startup probe (constitution §4). Returns
+   * Used by the Saleor app's startup probe (constitution Â§4). Returns
    * `{ ok: false, error }` on any failure rather than throwing, so the
    * caller can log a warning and continue booting.
    */

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Server-level integration test.
@@ -67,7 +67,7 @@ describe('server integration', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ taxBase: {} }),
     });
-    // No saleor signature, no APL entry — must NOT be 200.
+    // No saleor signature, no APL entry â€” must NOT be 200.
     expect(res.status).toBeGreaterThanOrEqual(400);
   });
 });

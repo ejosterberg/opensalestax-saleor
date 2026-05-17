@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
- * POST /api/register — Saleor app installation endpoint.
+ * POST /api/register â€” Saleor app installation endpoint.
  *
  * Saleor's install POST delivers `auth_token` + the calling
  * `saleorApiUrl`. The SDK verifies origin, stores both into the APL,

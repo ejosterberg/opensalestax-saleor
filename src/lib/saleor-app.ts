@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * APL wiring.
  *
- * EnvAPL is single-tenant (constitution §2 X: merchant self-hosts one
+ * EnvAPL is single-tenant (constitution Â§2 X: merchant self-hosts one
  * Saleor instance per app deployment). The APL is seeded from env vars;
  * Saleor's install POST writes the same fields so subsequent restarts
  * pick them up.
@@ -11,7 +11,7 @@
  * Note: The SDK ships a thin `SaleorApp` wrapper class around an APL,
  * but as of @saleor/app-sdk@1.8 its CJS export map mis-points
  * `./saleor-app` to a different file. We don't use the wrapper directly
- * — handlers consume `APL` instances — so we sidestep the issue by
+ * â€” handlers consume `APL` instances â€” so we sidestep the issue by
  * constructing only the EnvAPL.
  */
 

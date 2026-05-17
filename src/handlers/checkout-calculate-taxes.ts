@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Sync webhook handler for `CHECKOUT_CALCULATE_TAXES`.
  *
- * Saleor blocks the checkout until we respond. We target ≤2s with the
- * OST engine's typical 50-200 ms RTT (research §2).
+ * Saleor blocks the checkout until we respond. We target â‰¤2s with the
+ * OST engine's typical 50-200 ms RTT (research Â§2).
  */
 
 import { SaleorSyncWebhook } from '@saleor/app-sdk/handlers/fetch-api';
@@ -28,7 +28,7 @@ export function buildCheckoutCalculateTaxesWebhook(
     TaxesCalculationPayload,
     'CHECKOUT_CALCULATE_TAXES'
   >({
-    name: 'OpenSalesTax — Checkout tax calculation',
+    name: 'OpenSalesTax â€” Checkout tax calculation',
     webhookPath: 'api/webhooks/checkout-calculate-taxes',
     event: 'CHECKOUT_CALCULATE_TAXES',
     apl: deps.apl,

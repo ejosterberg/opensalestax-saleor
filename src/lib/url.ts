@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Strip trailing forward slashes from a URL string.
  *
- * Imperative version of `s.replace(/\/+$/, '')` — avoids a regex
+ * Imperative version of `s.replace(/\/+$/, '')` â€” avoids a regex
  * with a `+` quantifier so static analyzers stop flagging it as a
  * potential ReDoS vector (the regex is mathematically O(n) safe;
  * this is a portability tweak, not a correctness fix).

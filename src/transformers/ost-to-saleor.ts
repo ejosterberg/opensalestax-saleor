@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Transform OST engine responses into Saleor tax-webhook responses.
  *
- * Saleor's expected response shape (research/saleor-tax-app.md §4):
+ * Saleor's expected response shape (research/saleor-tax-app.md Â§4):
  *
  *   {
  *     "shipping_price_gross_amount": number,
@@ -17,7 +17,7 @@
  *   }
  *
  * Per-line `total_net_amount` MUST equal the Saleor request's
- * `totalPrice.amount` exactly (research §4). We propagate the pre-tax
+ * `totalPrice.amount` exactly (research Â§4). We propagate the pre-tax
  * amount we sent to the engine.
  *
  * Tax rate is decimal (0.07690), not percent (7.690).
@@ -38,7 +38,7 @@ export interface SaleorTaxResponse {
   lines: SaleorTaxLineResponse[];
 }
 
-/** Empty response — signals Saleor to fall back to its catalog rates. */
+/** Empty response â€” signals Saleor to fall back to its catalog rates. */
 export function emptyTaxResponse(): SaleorTaxResponse {
   return {
     shipping_price_gross_amount: 0,

@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Typed environment-variable loader with validation.
  *
- * Fail-fast at boot when required vars are missing or malformed —
- * the constitution (§7, §8) wants production misconfigurations to
+ * Fail-fast at boot when required vars are missing or malformed â€”
+ * the constitution (Â§7, Â§8) wants production misconfigurations to
  * surface immediately, not as silent JWT verification skips.
  */
 
@@ -22,7 +22,7 @@ export interface AppConfig {
   /** OST engine request timeout in ms. Default 5000. */
   ostaxTimeoutMs: number;
   /**
-   * Fail-hard mode (constitution §8). When true, engine 5xx errors
+   * Fail-hard mode (constitution Â§8). When true, engine 5xx errors
    * propagate as webhook errors and block the checkout. When false
    * (default), engine errors return empty tax responses and let
    * Saleor fall back to its own catalog rates.
@@ -31,7 +31,7 @@ export interface AppConfig {
   /**
    * Single-tenant Saleor install. When set, the EnvAPL is seeded
    * from these values (per `@saleor/app-sdk`'s EnvAPL contract).
-   * Empty strings are tolerated to support pre-install boot —
+   * Empty strings are tolerated to support pre-install boot â€”
    * Saleor's install POST will then write the real values into
    * the running process's env (or the merchant edits docker-compose).
    */
@@ -54,7 +54,7 @@ function parsePort(raw: string | undefined, fallback: number): number {
   const n = Number.parseInt(raw, 10);
   // Port 0 is a valid input: the OS picks a free port. Used in tests.
   if (!Number.isFinite(n) || n < 0 || n > 65535) {
-    throw new Error(`Invalid PORT "${raw}" — expected integer 0-65535`);
+    throw new Error(`Invalid PORT "${raw}" â€” expected integer 0-65535`);
   }
   return n;
 }
@@ -63,7 +63,7 @@ function parseTimeout(raw: string | undefined, fallback: number): number {
   if (raw === undefined || raw === '') return fallback;
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n) || n <= 0) {
-    throw new Error(`Invalid OSTAX_TIMEOUT_MS "${raw}" — expected positive integer`);
+    throw new Error(`Invalid OSTAX_TIMEOUT_MS "${raw}" â€” expected positive integer`);
   }
   return n;
 }

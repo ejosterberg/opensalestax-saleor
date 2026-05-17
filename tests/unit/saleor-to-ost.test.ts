@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 import { buildOstRequest } from '../../src/transformers/saleor-to-ost';
 import type { SaleorTaxBase } from '../../src/transformers/saleor-to-ost';
@@ -17,7 +17,7 @@ function makeBase(overrides: Partial<SaleorTaxBase> = {}): SaleorTaxBase {
   };
 }
 
-describe('buildOstRequest — gating', () => {
+describe('buildOstRequest â€” gating', () => {
   it('returns non-usd failure when currency is EUR', () => {
     const result = buildOstRequest(makeBase({ currency: 'EUR' }));
     expect(result.ok).toBe(false);
@@ -55,7 +55,7 @@ describe('buildOstRequest — gating', () => {
   });
 });
 
-describe('buildOstRequest — line mapping', () => {
+describe('buildOstRequest â€” line mapping', () => {
   it('maps each Saleor line to one OST line', () => {
     const result = buildOstRequest(
       makeBase({

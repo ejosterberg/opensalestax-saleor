@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
- * GET /api/manifest — returns the Saleor app manifest.
+ * GET /api/manifest â€” returns the Saleor app manifest.
  *
  * Declares two SYNC webhook subscriptions (CHECKOUT_CALCULATE_TAXES,
  * ORDER_CALCULATE_TAXES) and the HANDLE_TAXES app permission.

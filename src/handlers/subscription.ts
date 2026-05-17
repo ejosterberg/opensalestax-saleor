@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Shared GraphQL subscription for the tax-calc webhooks.
  *
  * Both `CHECKOUT_CALCULATE_TAXES` and `ORDER_CALCULATE_TAXES` deliver
  * the same `CalculateTaxes` payload shape (research/saleor-tax-app.md
- * §3) — only the dispatching event differs. We request the minimum
+ * Â§3) â€” only the dispatching event differs. We request the minimum
  * fields needed to call the OST engine, to keep payload size small.
  */
 

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 #
 # Example docker-compose for self-hosting the OpenSalesTax Saleor app
 # alongside an OpenSalesTax engine. The merchant's existing Saleor
@@ -33,14 +33,14 @@ services:
       # Required at boot.
       APP_API_BASE_URL: "${APP_API_BASE_URL:-http://localhost:3000}"
       OSTAX_API_URL: "${OSTAX_API_URL:-http://ost-engine:8080}"
-      # Optional — set if your engine requires an API key.
+      # Optional â€” set if your engine requires an API key.
       OSTAX_API_KEY: "${OSTAX_API_KEY:-}"
       # Fail-soft (default) returns empty tax on engine error and
       # lets Saleor fall back. Set to "1" to opt into fail-hard.
       OSTAX_FAIL_HARD: "${OSTAX_FAIL_HARD:-0}"
       # Per-request timeout to the engine, in milliseconds.
       OSTAX_TIMEOUT_MS: "${OSTAX_TIMEOUT_MS:-5000}"
-      # APL seed values — written by Saleor's install POST and
+      # APL seed values â€” written by Saleor's install POST and
       # echoed to stdout. Capture them and re-set via `.env` so the
       # app survives restarts.
       SALEOR_API_URL: "${SALEOR_API_URL:-}"
@@ -54,7 +54,7 @@ services:
 
   ost-engine:
     # Pin a specific engine release in production. v0.55.4+ confirmed
-    # with this connector; constitution §4 pins the v1 HTTP API.
+    # with this connector; constitution Â§4 pins the v1 HTTP API.
     image: ghcr.io/ejosterberg/opensalestax:latest
     container_name: ost-engine
     restart: unless-stopped

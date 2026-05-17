@@ -1,16 +1,16 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Shared tax-webhook handler logic.
  *
  * Both `CHECKOUT_CALCULATE_TAXES` and `ORDER_CALCULATE_TAXES` follow
- * the same flow: gate → transform → engine call → transform → respond.
+ * the same flow: gate â†’ transform â†’ engine call â†’ transform â†’ respond.
  * This module factors that flow so each webhook handler is a thin
  * adapter over the shared `handleTaxCalculation` function.
  *
- * Fail-soft (constitution §8): engine errors return an empty tax
+ * Fail-soft (constitution Â§8): engine errors return an empty tax
  * response so Saleor falls back to its catalog rates. `OSTAX_FAIL_HARD=1`
- * opts the merchant into fail-hard behavior — engine errors return a
+ * opts the merchant into fail-hard behavior â€” engine errors return a
  * 5xx so Saleor blocks the checkout.
  */
 
@@ -54,7 +54,7 @@ export interface HandleTaxesContext {
 }
 
 /**
- * Run the gate → engine → transform pipeline. Returns the Saleor tax
+ * Run the gate â†’ engine â†’ transform pipeline. Returns the Saleor tax
  * response, or throws when fail-hard mode is on and the engine errors.
  */
 export async function handleTaxCalculation(

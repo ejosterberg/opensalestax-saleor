@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * ESLint flat configuration.
@@ -26,7 +26,7 @@ module.exports = tseslint.config(
         tsconfigRootDir: __dirname,
       },
       globals: {
-        // Node + Jest globals — flat config drops the `env` shorthand,
+        // Node + Jest globals â€” flat config drops the `env` shorthand,
         // so we declare the ones we use explicitly.
         process: 'readonly',
         Buffer: 'readonly',

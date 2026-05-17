@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Transform Saleor tax-webhook payloads into OST engine request bodies.
  *
- * Gating rules (constitution §5, §10):
+ * Gating rules (constitution Â§5, Â§10):
  * - currency MUST be "USD"
  * - address.country.code MUST be "US"
  * - address.postalCode MUST match ^\d{5}(-\d{4})?$
@@ -14,7 +14,7 @@
 
 import type { CalculateLineItem, CalculateRequest } from '../lib/ostax-client';
 
-/** A single Saleor tax line — fields the connector reads. */
+/** A single Saleor tax line â€” fields the connector reads. */
 export interface SaleorTaxLine {
   id: string;
   quantity: number;

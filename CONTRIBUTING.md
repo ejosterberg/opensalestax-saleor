@@ -22,8 +22,8 @@ Human authors take responsibility for their contributions.
 
 ## License
 
-By contributing, you agree your contribution is licensed under
-Apache-2.0 (see `LICENSE`).
+By contributing, you agree your contribution is dual-licensed under
+your choice of Apache-2.0 OR GPL-2.0-or-later (see `LICENSE`).
 
 ## Quality gate
 

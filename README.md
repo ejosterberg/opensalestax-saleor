@@ -2,11 +2,11 @@
 
 [![npm version](https://img.shields.io/npm/v/@ejosterberg/saleor-app-opensalestax.svg)](https://www.npmjs.com/package/@ejosterberg/saleor-app-opensalestax)
 [![CI](https://github.com/ejosterberg/opensalestax-saleor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ejosterberg/opensalestax-saleor/actions/workflows/ci.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: Apache-2.0 OR GPL-2.0-or-later](https://img.shields.io/badge/License-Apache_2.0_OR_GPL_2.0--or--later-blue.svg)](LICENSE)
 
 > **Saleor Tax App connector** — destination-based US sales tax via
 > the self-hosted [OpenSalesTax](https://github.com/ejosterberg/opensalestax) engine.
-> No per-transaction fees. No SaaS lock-in. Apache-2.0.
+> No per-transaction fees. No SaaS lock-in. Dual-licensed Apache-2.0 OR GPL-2.0-or-later.
 
 ## What this is
 
@@ -230,7 +230,7 @@ commit -s`) is required on every commit. No AI co-author trailers.
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Dual-licensed under your choice of [Apache-2.0](LICENSE-APACHE.txt) OR [GPL-2.0-or-later](LICENSE-GPL.txt). See [LICENSE](LICENSE).
 
 ## Related projects
 

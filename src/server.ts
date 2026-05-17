@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * HTTP server entrypoint.
  *
- * Raw Node `http` (no Express, no Next.js — constitution §2 Decision B)
+ * Raw Node `http` (no Express, no Next.js â€” constitution Â§2 Decision B)
  * with a thin adapter that converts Node `IncomingMessage` to Web API
  * `Request` and `Response` back, so we can mount `@saleor/app-sdk`'s
  * `WebApiHandler` functions directly.
@@ -190,12 +190,12 @@ export async function startServer(): Promise<ServerHandle> {
       port: config.port,
       appBaseUrl: config.appBaseUrl,
       ostaxApiUrl: config.ostaxApiUrl,
-      saleorApiUrl: config.saleor.apiUrl || '(none — pre-install)',
+      saleorApiUrl: config.saleor.apiUrl || '(none â€” pre-install)',
       failHard: config.failHard,
     }),
   );
 
-  // Startup probe — log a warning if engine is unreachable but don't crash;
+  // Startup probe â€” log a warning if engine is unreachable but don't crash;
   // engine may come up after the app.
   const readyProbe = client
     .healthCheck()

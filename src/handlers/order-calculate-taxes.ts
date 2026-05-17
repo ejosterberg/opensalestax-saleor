@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * Sync webhook handler for `ORDER_CALCULATE_TAXES`.
  *
  * Saleor calls this on order create + every line edit on an unfinalized
- * order. Same payload + response shape as `CHECKOUT_CALCULATE_TAXES` —
- * only the event name differs (research §2).
+ * order. Same payload + response shape as `CHECKOUT_CALCULATE_TAXES` â€”
+ * only the event name differs (research Â§2).
  */
 
 import { SaleorSyncWebhook } from '@saleor/app-sdk/handlers/fetch-api';
@@ -24,7 +24,7 @@ export function buildOrderCalculateTaxesWebhook(
     TaxesCalculationPayload,
     'ORDER_CALCULATE_TAXES'
   >({
-    name: 'OpenSalesTax — Order tax calculation',
+    name: 'OpenSalesTax â€” Order tax calculation',
     webhookPath: 'api/webhooks/order-calculate-taxes',
     event: 'ORDER_CALCULATE_TAXES',
     apl: deps.apl,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 /**
  * App version constant.
@@ -9,4 +9,4 @@
  * `rootDir` clean and the published bundle slim.
  */
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.1.1';
