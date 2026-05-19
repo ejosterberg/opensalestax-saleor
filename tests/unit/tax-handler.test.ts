@@ -141,6 +141,107 @@ describe('handleTaxCalculation', () => {
     expect(res.shipping_price_gross_amount).toBeCloseTo(10.79, 2);
   });
 
+  describe('per-state nexus filter (CP-3)', () => {
+    it('calls engine when nexusStates is omitted (filter disabled, default)', async () => {
+      const calc = jest.fn(() => Promise.resolve({
+        subtotal: '100.00',
+        tax_total: '7.88',
+        lines: [{ amount: '100.00', category: 'general', tax: '7.88', rate_pct: '7.88', jurisdictions: [] }],
+      }));
+      await handleTaxCalculation(makePayload(), CTX, {
+        client: fakeClient(calc),
+        failHard: false,
+        logger: noopLogger(),
+      });
+      expect(calc).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls engine when nexusStates is empty set (filter disabled)', async () => {
+      const calc = jest.fn(() => Promise.resolve({
+        subtotal: '100.00',
+        tax_total: '7.88',
+        lines: [{ amount: '100.00', category: 'general', tax: '7.88', rate_pct: '7.88', jurisdictions: [] }],
+      }));
+      await handleTaxCalculation(makePayload(), CTX, {
+        client: fakeClient(calc),
+        failHard: false,
+        nexusStates: new Set(),
+        logger: noopLogger(),
+      });
+      expect(calc).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls engine when destination state IS in nexus list', async () => {
+      const calc = jest.fn(() => Promise.resolve({
+        subtotal: '100.00',
+        tax_total: '7.88',
+        lines: [{ amount: '100.00', category: 'general', tax: '7.88', rate_pct: '7.88', jurisdictions: [] }],
+      }));
+      await handleTaxCalculation(
+        makePayload({ address: { country: { code: 'US' }, countryArea: 'MN', postalCode: '55403' } }),
+        CTX,
+        {
+          client: fakeClient(calc),
+          failHard: false,
+          nexusStates: new Set(['MN', 'WI']),
+          logger: noopLogger(),
+        },
+      );
+      expect(calc).toHaveBeenCalledTimes(1);
+    });
+
+    it('short-circuits engine when destination state NOT in nexus list', async () => {
+      const calc = jest.fn();
+      const res = await handleTaxCalculation(
+        makePayload({ address: { country: { code: 'US' }, countryArea: 'CA', postalCode: '94016' } }),
+        CTX,
+        {
+          client: fakeClient(calc),
+          failHard: false,
+          nexusStates: new Set(['MN', 'WI']),
+          logger: noopLogger(),
+        },
+      );
+      expect(calc).not.toHaveBeenCalled();
+      expect(res.lines).toHaveLength(0);
+    });
+
+    it('fail-closed when destination state is missing AND filter is active', async () => {
+      const calc = jest.fn();
+      const res = await handleTaxCalculation(
+        makePayload({ address: { country: { code: 'US' }, postalCode: '55403' } }),
+        CTX,
+        {
+          client: fakeClient(calc),
+          failHard: false,
+          nexusStates: new Set(['MN', 'WI']),
+          logger: noopLogger(),
+        },
+      );
+      expect(calc).not.toHaveBeenCalled();
+      expect(res.lines).toHaveLength(0);
+    });
+
+    it('case-insensitive state match (countryArea lowercased)', async () => {
+      const calc = jest.fn(() => Promise.resolve({
+        subtotal: '100.00',
+        tax_total: '7.88',
+        lines: [{ amount: '100.00', category: 'general', tax: '7.88', rate_pct: '7.88', jurisdictions: [] }],
+      }));
+      await handleTaxCalculation(
+        makePayload({ address: { country: { code: 'US' }, countryArea: 'mn', postalCode: '55403' } }),
+        CTX,
+        {
+          client: fakeClient(calc),
+          failHard: false,
+          nexusStates: new Set(['MN']),
+          logger: noopLogger(),
+        },
+      );
+      expect(calc).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('does not include customer addresses or product names in log calls', async () => {
     const calls: Array<{ msg: string; ctx?: Record<string, unknown> }> = [];
     const logger: Logger = {

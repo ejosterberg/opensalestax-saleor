@@ -128,9 +128,42 @@ All configuration is via environment variables. See
 | `OSTAX_API_KEY`    |    | — | Sent as `X-API-Key` if set. |
 | `OSTAX_TIMEOUT_MS` |    | `5000` | Per-engine-request timeout. |
 | `OSTAX_FAIL_HARD`  |    | unset | `"1"` opts into fail-hard mode. |
+| `OSTAX_NEXUS_STATES` |  | unset | Comma-separated list of US 2-letter state codes (e.g. `"MN,WI,IA"`) for the per-state nexus filter (see below). Unset / empty = filter disabled (engine called for every cart, pre-v1.2 behavior). |
 | `SALEOR_API_URL`   |    | — | APL seed (written by install). |
 | `SALEOR_APP_ID`    |    | — | APL seed. |
 | `SALEOR_APP_TOKEN` |    | — | APL seed. Treat as a secret. |
+
+### Per-state nexus filter (CP-3, v1.2.0)
+
+Most US merchants only have nexus (sales-tax-collection obligation) in
+a small set of states — typically 1–3. Without a filter, every cart
+goes to the engine even when the merchant has no obligation to
+collect for that destination.
+
+Set `OSTAX_NEXUS_STATES` to a comma-separated list of US 2-letter
+state codes to restrict engine round-trips to ship-tos in those
+states:
+
+```bash
+OSTAX_NEXUS_STATES=MN,WI,IA
+```
+
+When the filter is active:
+
+- Carts whose ship-to state IS in the list → engine called as usual.
+- Carts whose ship-to state is NOT in the list → short-circuit with
+  an empty tax response. No engine RTT. Saleor falls back to its
+  catalog rates (typically zero).
+- Carts whose ship-to state is missing/unresolvable AND the filter is
+  active → fail-closed (also short-circuit). The safer default for a
+  merchant who explicitly opted into the filter.
+
+When `OSTAX_NEXUS_STATES` is unset or empty, the filter is disabled
+and every cart calls the engine (pre-v1.2 behavior — fully backward
+compatible).
+
+Brings this connector in line with WooCommerce v0.5, Vendure v1.2,
+and Odoo v0.3, which already shipped this filter.
 
 ## What it does NOT do
 

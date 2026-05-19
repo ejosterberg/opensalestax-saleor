@@ -9,4 +9,4 @@
  * `rootDir` clean and the published bundle slim.
  */
 
-export const APP_VERSION = '1.1.1';
+export const APP_VERSION = '1.2.0';

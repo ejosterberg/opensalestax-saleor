@@ -29,6 +29,16 @@ export interface AppConfig {
    */
   failHard: boolean;
   /**
+   * Per-state nexus allowlist (CP-3). Empty set means "no filter
+   * — call engine for every cart" (v1.1 behavior). When non-empty,
+   * webhooks whose ship-to state is not in this set short-circuit
+   * with an empty tax response without round-tripping the engine.
+   * Parsed from `OSTAX_NEXUS_STATES` as a comma-separated list of
+   * uppercase 2-letter US state codes (e.g. "MN,WI,IA"). Invalid
+   * tokens are dropped silently with a single startup warning.
+   */
+  nexusStates: ReadonlySet<string>;
+  /**
    * Single-tenant Saleor install. When set, the EnvAPL is seeded
    * from these values (per `@saleor/app-sdk`'s EnvAPL contract).
    * Empty strings are tolerated to support pre-install boot â€”
@@ -57,6 +67,28 @@ function parsePort(raw: string | undefined, fallback: number): number {
     throw new Error(`Invalid PORT "${raw}" â€” expected integer 0-65535`);
   }
   return n;
+}
+
+/** US state-code regex: uppercase 2-letter ISO 3166-2 subdivision. */
+const STATE_CODE_REGEX = /^[A-Z]{2}$/;
+
+/**
+ * Parse `OSTAX_NEXUS_STATES` env var into a frozen Set of uppercase
+ * 2-letter state codes. Accepts comma- or whitespace-separated input,
+ * normalizes case, and silently drops malformed tokens. Returns an
+ * empty Set when the input is undefined or empty (filter disabled).
+ */
+export function parseNexusStates(raw: string | undefined): ReadonlySet<string> {
+  if (raw === undefined) return Object.freeze(new Set<string>());
+  const trimmed = raw.trim();
+  if (trimmed === '') return Object.freeze(new Set<string>());
+  const out = new Set<string>();
+  for (const tok of trimmed.split(/[\s,]+/)) {
+    const upper = tok.trim().toUpperCase();
+    if (STATE_CODE_REGEX.test(upper)) out.add(upper);
+  }
+  Object.freeze(out);
+  return out;
 }
 
 function parseTimeout(raw: string | undefined, fallback: number): number {
@@ -101,6 +133,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     ostaxApiKey: env.OSTAX_API_KEY ?? undefined,
     ostaxTimeoutMs: parseTimeout(env.OSTAX_TIMEOUT_MS, 5000),
     failHard: parseBool(env.OSTAX_FAIL_HARD),
+    nexusStates: parseNexusStates(env.OSTAX_NEXUS_STATES),
     saleor: {
       apiUrl: env.SALEOR_API_URL ?? '',
       appId: env.SALEOR_APP_ID ?? '',

@@ -105,11 +105,13 @@ export async function startServer(): Promise<ServerHandle> {
     apl,
     client,
     failHard: config.failHard,
+    nexusStates: config.nexusStates,
   });
   const order = buildOrderCalculateTaxesWebhook({
     apl,
     client,
     failHard: config.failHard,
+    nexusStates: config.nexusStates,
   });
 
   const routes: ReadonlyArray<Route> = [
@@ -192,6 +194,10 @@ export async function startServer(): Promise<ServerHandle> {
       ostaxApiUrl: config.ostaxApiUrl,
       saleorApiUrl: config.saleor.apiUrl || '(none â€” pre-install)',
       failHard: config.failHard,
+      nexusStates:
+        config.nexusStates.size === 0
+          ? '(none — filter disabled)'
+          : [...config.nexusStates].sort().join(','),
     }),
   );
 

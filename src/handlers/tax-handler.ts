@@ -32,6 +32,15 @@ export interface Logger {
 export interface TaxHandlerDeps {
   client: OpenSalesTaxClient;
   failHard: boolean;
+  /**
+   * Per-state nexus allowlist (CP-3). Empty set = filter disabled
+   * (engine called for every cart, preserving pre-v1.2 behavior).
+   * Non-empty = short-circuit any ship-to whose `countryArea` (US
+   * state code) is not in the set, returning an empty tax response
+   * without an engine round-trip. Saleor falls back to its catalog
+   * rates (typically: no tax) on the empty response.
+   */
+  nexusStates?: ReadonlySet<string>;
   logger?: Logger;
 }
 
@@ -79,6 +88,27 @@ export async function handleTaxCalculation(
       reason: gated.reason,
     });
     return emptyTaxResponse();
+  }
+
+  // Per-state nexus filter (CP-3). When the merchant has set
+  // OSTAX_NEXUS_STATES, short-circuit any ship-to whose state is not
+  // in the allowlist. Saleor's `countryArea` ships as a 2-letter US
+  // state code (e.g. "MN"). Unresolvable state with the filter enabled
+  // is fail-closed (no engine call, no tax line) — the safer default
+  // for a merchant who explicitly opted into the filter. Mirrors
+  // WooCom v0.5 / Vendure v1.2 / Odoo v0.3.
+  const nexusStates = deps.nexusStates;
+  if (nexusStates !== undefined && nexusStates.size > 0) {
+    const rawState = taxBase.address.countryArea ?? '';
+    const state = rawState.trim().toUpperCase();
+    if (state === '' || !nexusStates.has(state)) {
+      log.info('tax_calc.skipped', {
+        event: ctx.eventType,
+        reason: 'nexus-filter',
+        state: state === '' ? null : state,
+      });
+      return emptyTaxResponse();
+    }
   }
 
   const productLineCount = taxBase.lines.length;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
-import { loadConfig } from '../../src/lib/config';
+import { loadConfig, parseNexusStates } from '../../src/lib/config';
 
 function baseEnv(): NodeJS.ProcessEnv {
   return {
@@ -86,6 +86,16 @@ describe('loadConfig', () => {
     );
   });
 
+  it('defaults nexusStates to an empty set when OSTAX_NEXUS_STATES is unset', () => {
+    const cfg = loadConfig(baseEnv());
+    expect(cfg.nexusStates.size).toBe(0);
+  });
+
+  it('parses OSTAX_NEXUS_STATES into a set of upper-case 2-letter codes', () => {
+    const cfg = loadConfig({ ...baseEnv(), OSTAX_NEXUS_STATES: 'mn, wi, IA' });
+    expect([...cfg.nexusStates].sort()).toEqual(['IA', 'MN', 'WI']);
+  });
+
   it('passes through Saleor APL seed values', () => {
     const cfg = loadConfig({
       ...baseEnv(),
@@ -96,5 +106,39 @@ describe('loadConfig', () => {
     expect(cfg.saleor.apiUrl).toBe('https://shop.saleor.io/graphql/');
     expect(cfg.saleor.appId).toBe('app-id');
     expect(cfg.saleor.appToken).toBe('tok');
+  });
+});
+
+describe('parseNexusStates', () => {
+  it('returns empty set for undefined', () => {
+    expect(parseNexusStates(undefined).size).toBe(0);
+  });
+
+  it('returns empty set for empty / whitespace-only input', () => {
+    expect(parseNexusStates('').size).toBe(0);
+    expect(parseNexusStates('   ').size).toBe(0);
+  });
+
+  it('parses a simple comma-separated list', () => {
+    const set = parseNexusStates('MN,WI,IA');
+    expect([...set].sort()).toEqual(['IA', 'MN', 'WI']);
+  });
+
+  it('normalizes lowercase + mixed whitespace', () => {
+    const set = parseNexusStates(' mn , wi  iA  ');
+    expect([...set].sort()).toEqual(['IA', 'MN', 'WI']);
+  });
+
+  it('drops malformed tokens silently', () => {
+    const set = parseNexusStates('MN, Minnesota, 12, XX, wi');
+    // Minnesota (len 9) and 12 (not alpha) drop; XX passes regex but is
+    // a junk code — we intentionally don't validate against the real
+    // 50-state list (would couple to a static table). XX stays.
+    expect([...set].sort()).toEqual(['MN', 'WI', 'XX']);
+  });
+
+  it('returns frozen set (immutable)', () => {
+    const set = parseNexusStates('MN');
+    expect(Object.isFrozen(set)).toBe(true);
   });
 });

@@ -6,6 +6,25 @@ and the project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-19
+
+### Added
+
+- **Per-state nexus filter (CP-3).** New `OSTAX_NEXUS_STATES` env var
+  accepts a comma-separated list of US state codes
+  (e.g. `MN,WI,IA`). When set, the app short-circuits the engine call
+  for any cart whose ship-to state is not in the list, returning an
+  empty tax response without an engine round-trip. Unset / empty
+  preserves v1.1 behavior (engine called for every cart). Missing /
+  unresolvable destination state with the filter active is
+  fail-closed (also short-circuit), the safer default for a merchant
+  who explicitly opted in. Brings this connector in line with
+  WooCommerce v0.5, Vendure v1.2, and Odoo v0.3, which already
+  shipped this filter. Major win for merchants with limited nexus
+  footprints — typical merchant only has 1–3 nexus states and was
+  previously paying ~50–200 ms RTT per customer regardless. Resolves
+  improvement-queue item S-5.
+
 ## [1.1.1] - 2026-05-17
 
 ### Changed
